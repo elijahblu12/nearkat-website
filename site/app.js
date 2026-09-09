@@ -168,4 +168,139 @@
     var ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
   }
+
+  /* ---------- reward calculator ---------- */
+  var calcRoot = $('reward-calc');
+  if (calcRoot) {
+    var calcMode = 'tokens';
+    var calcData = null;
+    var calcInput = $('calc-balance');
+
+    function calcText(id, value) {
+      var el = $(id);
+      if (el) el.textContent = value;
+    }
+    function parseAmount(value) {
+      var clean = String(value || '').trim().toLowerCase().replace(/[$,\s_]/g, '');
+      var match = /^(\d*\.?\d+)([kmb])?$/.exec(clean);
+      if (!match) return 0;
+      var amount = Number(match[1]);
+      var mult = match[2] === 'k' ? 1e3 : match[2] === 'm' ? 1e6 : match[2] === 'b' ? 1e9 : 1;
+      return isFinite(amount) ? Math.min(Math.max(amount * mult, 0), 1e12) : 0;
+    }
+    function inputFormat(value) {
+      return Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+    }
+    function pct(value, digits) {
+      if (value == null || !isFinite(value)) return '—';
+      return (value * 100).toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits }) + '%';
+    }
+    function nearAmount(value) {
+      if (value == null || !isFinite(value)) return '—';
+      var d = Math.abs(value) < 1 ? 4 : Math.abs(value) < 100 ? 2 : 1;
+      return num(value, d);
+    }
+    function setPresetButtons() {
+      var tokenPresets = [250000, 1000000, 5000000, 10000000];
+      var usdPresets = [100, 500, 1000, 5000];
+      var list = calcMode === 'tokens' ? tokenPresets : usdPresets;
+      Array.prototype.forEach.call(document.querySelectorAll('#calc-presets button'), function (button, index) {
+        var value = list[index];
+        button.dataset.value = value;
+        button.textContent = calcMode === 'tokens'
+          ? (value >= 1e6 ? (value / 1e6) + 'M' : (value / 1e3) + 'K')
+          : '$' + value.toLocaleString('en-US');
+        button.classList.toggle('active', parseAmount(calcInput.value) === value);
+      });
+    }
+    function renderCalculator() {
+      setPresetButtons();
+      if (!calcData) return;
+
+      var entered = parseAmount(calcInput.value);
+      var tokenPrice = Number(calcData.token && calcData.token.priceUsd) || 0;
+      var nearPrice = Number(calcData.prices && calcData.prices.nearUsd) || 0;
+      var supply = Number(calcData.calibration && calcData.calibration.eligibleSupply) || 0;
+      var observed = calcData.observed || {};
+      var poolNearDay = Number(observed.nearPerDay);
+      var tokens = calcMode === 'tokens' ? entered : (tokenPrice ? entered / tokenPrice : 0);
+      var valueUsd = tokenPrice ? tokens * tokenPrice : 0;
+      var share = supply ? Math.min(tokens / supply, 1) : 0;
+      var nearDay = isFinite(poolNearDay) ? poolNearDay * share : null;
+      var usdDay = nearDay != null && nearPrice ? nearDay * nearPrice : null;
+      var dailyRate = valueUsd && usdDay != null ? usdDay / valueUsd : null;
+
+      calcText('calc-worth', valueUsd ? usd(valueUsd) : '$0');
+      calcText('calc-token-price', tokenPrice ? 'at ' + usd(tokenPrice, 5) : '');
+      calcText('calc-near-day', nearAmount(nearDay));
+      calcText('calc-usd-day', usdDay != null ? usd(usdDay, usdDay < 1 ? 2 : 0) : '—');
+      calcText('calc-near-7', nearAmount(nearDay == null ? null : nearDay * 7));
+      calcText('calc-usd-7', usdDay == null ? '≈ —' : '≈ ' + usd(usdDay * 7));
+      calcText('calc-near-30', nearAmount(nearDay == null ? null : nearDay * 30));
+      calcText('calc-usd-30', usdDay == null ? '≈ —' : '≈ ' + usd(usdDay * 30));
+      calcText('calc-position', tokens >= 10000 ? compact(tokens).replace('$', '') : num(tokens, 2));
+      calcText('calc-value', valueUsd ? usd(valueUsd) : '$0');
+      calcText('calc-value-sub', tokenPrice ? 'at ' + usd(tokenPrice, 5) : 'price unavailable');
+      calcText('calc-share', pct(share, share < .001 ? 4 : 2));
+      calcText('calc-rate', pct(dailyRate, dailyRate && dailyRate < .001 ? 3 : 2));
+      calcText('calc-rate-sub', dailyRate == null ? 'simple annualized' : pct(dailyRate * 365, 0) + ' simple annualized');
+
+      if (isFinite(poolNearDay)) {
+        $('calc-equation').innerHTML = nearAmount(poolNearDay) + ' $NEAR per day at the observed pace × your ' + pct(share, 4) + ' share = <strong>' + nearAmount(nearDay) + ' $NEAR / day</strong>';
+      }
+
+      var lamboDays = usdDay && usdDay > 0 ? 270000 / usdDay : null;
+      calcText('calc-lambo', lamboDays == null ? '—' : (lamboDays <= 1 ? 'today' : num(Math.ceil(lamboDays)) + ' days'));
+
+      var observedHours = Number(observed.observedHours);
+      var calibration = calcData.calibration || {};
+      var note = calibration.calibrated
+        ? 'Eligible supply uses the latest calibrated estimate.'
+        : 'Eligible supply is not calibrated yet, so the calculator divides by the full ' + compact(supply).replace('$', '') + '. Your real share may be larger.';
+      if (isFinite(observedHours)) note += ' Rate window: ' + (observed.method === 'launch_average' ? 'average since launch, ' : '') + (observedHours / 24).toFixed(1) + ' days.';
+      note += ' Estimates are not guaranteed.';
+      calcText('calc-note', note);
+    }
+    function loadCalculator() {
+      fetch('/api/nearkat/rewards', { cache: 'no-store' }).then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      }).then(function (data) {
+        calcData = data;
+        var status = $('calc-status');
+        status.classList.remove('error');
+        status.lastChild.nodeValue = ' Live · updated ' + ago(data.updatedAt || data.dataAt);
+        renderCalculator();
+      }).catch(function () {
+        var status = $('calc-status');
+        status.classList.add('error');
+        status.lastChild.nodeValue = ' Live rate unavailable · retrying';
+      });
+    }
+
+    calcInput.addEventListener('input', renderCalculator);
+    calcInput.addEventListener('blur', function () { calcInput.value = inputFormat(parseAmount(calcInput.value)); renderCalculator(); });
+    $('calc-presets').addEventListener('click', function (event) {
+      var button = event.target.closest('button[data-value]');
+      if (!button) return;
+      calcInput.value = inputFormat(Number(button.dataset.value));
+      renderCalculator();
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-calc-mode]'), function (button) {
+      button.addEventListener('click', function () {
+        calcMode = button.dataset.calcMode;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-calc-mode]'), function (item) {
+          item.setAttribute('aria-pressed', String(item === button));
+        });
+        $('calc-prefix').hidden = calcMode !== 'usd';
+        $('calc-suffix').hidden = calcMode !== 'tokens';
+        calcInput.setAttribute('aria-label', calcMode === 'tokens' ? 'NEARKAT balance' : 'Position value in USD');
+        calcInput.value = calcMode === 'tokens' ? '1,000,000' : '1,000';
+        renderCalculator();
+      });
+    });
+
+    loadCalculator();
+    setInterval(loadCalculator, 45000);
+  }
 })();
