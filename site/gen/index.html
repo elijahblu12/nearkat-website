@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Meme Den — $NEARKAT</title>
+<meta name="description" content="Drop any scene and the Nearkat plays the part. Or describe one. Captions included.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0806">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<style>
+@font-face{font-family:'DisplayX';src:url(/fonts/archivoblack.woff2) format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'UIX';src:url(/fonts/grotesk500.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'UIX';src:url(/fonts/grotesk700.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'MonoX';src:url(/fonts/mono700.woff2) format('woff2');font-weight:700;font-display:swap}
+:root{
+  --pitch:#0b0806;--earth:#1a120c;--panel:#14100c;--line:rgba(243,234,216,.12);
+  --bone:#f3ead8;--dim:rgba(243,234,216,.66);--green:#00ec97;--green-ink:#063d2b;--green-deep:#00b874;--red:#ff6b6b;
+  --display:'DisplayX','Archivo Black',Impact,'Arial Black',sans-serif;
+  --ui:'UIX','Space Grotesk',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:'MonoX','Space Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pitch);color:var(--bone);font-family:var(--ui);font-weight:500;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+body > *{position:relative;z-index:1}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--green);text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(to bottom,rgba(11,8,6,.95),rgba(11,8,6,.8));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-top:11px;padding-bottom:11px}
+.top .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:18px;letter-spacing:.06em;color:var(--bone)}
+.top .brand img{width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 2px var(--green)}
+.top .back{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.top .back:hover{color:var(--green)}
+
+/* masthead */
+.mast{padding:52px 0 26px;position:relative;overflow:hidden}
+.mast .wrap{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.kick::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(0,236,151,.25)}
+.mast h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(44px,7vw,92px);line-height:.9;letter-spacing:-.01em}
+.mast h1 em{font-style:normal;color:var(--green)}
+.mast p{margin:16px 0 0;max-width:58ch;color:var(--dim);font-size:17px}
+.mast .trio{width:min(260px,32vw);filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
+@media(max-width:700px){.mast .wrap{grid-template-columns:1fr}.mast .trio{width:180px;justify-self:end;margin-top:-20px}}
+
+/* layout */
+.grid{display:grid;grid-template-columns:400px 1fr;gap:22px;padding:22px 0 56px}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:inset 0 0 0 4px rgba(243,234,216,.03),0 24px 60px rgba(0,0,0,.45)}
+.lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(243,234,216,.55);display:block;margin:20px 0 8px}
+.card > .lab:first-child{margin-top:0}
+
+/* tabs / pips */
+.tabs,.pips{display:flex;background:rgba(243,234,216,.05);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.tabs button,.pips button{flex:1;cursor:pointer;background:transparent;border:0;border-radius:9px;padding:10px 6px;color:var(--dim);font-family:var(--ui);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.pips button{font-family:var(--mono);font-size:13px;letter-spacing:0;text-transform:none}
+.tabs button[aria-selected="true"],.pips button[aria-pressed="true"]{background:var(--green);color:var(--green-ink)}
+
+/* drop */
+#dropwrap{display:flow-root}
+.drop{display:block;width:100%;border:2px dashed rgba(243,234,216,.25);background:rgba(0,0,0,.35);border-radius:14px;padding:26px 18px;text-align:center;cursor:pointer;position:relative;min-height:120px}
+.drop.on{border-color:var(--green);background:rgba(0,236,151,.08)}
+.drop .hint{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--dim)}
+.drop img{max-height:190px;margin:0 auto;border-radius:8px}
+.drop .clear{position:absolute;top:8px;right:8px;background:var(--bone);color:var(--pitch);border:0;border-radius:999px;cursor:pointer;font-family:var(--ui);font-weight:700;font-size:10px;letter-spacing:.12em;padding:6px 10px;text-transform:uppercase}
+.drop input{display:none}
+
+textarea,select,input[type=text]{width:100%;font-family:var(--ui);font-weight:500;font-size:15px;color:var(--bone);background:rgba(0,0,0,.4);border:1px solid rgba(243,234,216,.18);border-radius:12px;padding:11px 12px}
+textarea{min-height:78px;resize:vertical}
+select{font-weight:700;font-size:13px}
+textarea:focus,select:focus,input:focus{outline:none;border-color:var(--green)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:12px 20px;border:2px solid var(--green);border-radius:999px;background:var(--green);color:var(--green-ink);font-family:var(--ui);font-weight:700;font-size:13px;letter-spacing:.02em;white-space:nowrap;box-shadow:0 4px 0 var(--green-deep);transition:transform .12s,background .12s}
+.btn:hover{background:#2bffb0}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+.btn.line{background:transparent;color:var(--bone);border-color:rgba(243,234,216,.35);box-shadow:none}
+.btn.line:hover{border-color:var(--green);color:var(--green);background:rgba(0,236,151,.08)}
+.btn.sm{padding:8px 14px;font-size:12px}
+.go{width:100%;margin-top:22px;padding:15px;font-size:15px}
+.note{margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--dim)}
+.err{margin-top:14px;border-left:4px solid var(--red);padding:9px 12px;background:rgba(255,107,107,.12);border-radius:0 10px 10px 0;font-size:14px;color:#ffd9d9}
+
+/* results */
+.out{min-height:340px;display:grid;place-items:center;align-content:center;text-align:center}
+.out .idle{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;line-height:2}
+.sentry{width:110px;margin:0 auto 14px;animation:sway 2.4s ease-in-out infinite;filter:drop-shadow(0 10px 20px rgba(0,0,0,.6))}
+@keyframes sway{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;width:100%;align-self:start}
+.res{border:1px solid var(--line);border-radius:16px;background:#0b0806;padding:10px}
+.res canvas{width:100%;height:auto;border-radius:10px;display:block;background:#000}
+.res .cap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.res .cap input{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.02em;padding:9px 10px}
+.res .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(6,61,43,.3);border-top-color:var(--green-ink);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* wall */
+.wall{background:linear-gradient(to bottom,transparent,#000 70%);padding:52px 0 60px;border-top:1px solid var(--line)}
+.wall h2{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(30px,5vw,56px);line-height:.95}
+.wall h2 em{font-style:normal;color:var(--green)}
+.wall .sub{color:var(--dim);margin:10px 0 26px;max-width:56ch}
+.walls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.walls a{display:block;border:1px solid var(--line);border-radius:12px;background:#0b0806;padding:6px;transition:transform .15s,border-color .15s}
+.walls a:hover{transform:translateY(-3px);border-color:var(--green)}
+.walls img{border-radius:8px}
+.empty{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--dim)}
+
+footer{padding:36px 0;text-align:center;font-size:12.5px;line-height:1.7;color:rgba(243,234,216,.5);background:#000}
+footer .wrap{max-width:80ch}
+@media(prefers-reduced-motion:reduce){.sentry{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-64.png" alt="">NEARKAT</a>
+    <a class="back" href="/">&larr; back to the den</a>
+  </div>
+</div>
+
+<div class="mast">
+  <div class="wrap">
+    <div>
+      <div class="kick">Chamber −33 m · the meme den</div>
+      <h1>The <em>meme den.</em></h1>
+      <p>Drop any scene, a movie still, a meme template, a photo, and the Nearkat plays the part in whatever that scene is wearing. Or just describe one. Add a caption, download, pin it to the wall.</p>
+    </div>
+    <img class="trio" src="trio.png" alt="The Nearkat clan">
+  </div>
+</div>
+
+<div class="wrap">
+<div class="grid">
+
+  <form class="card" id="form">
+    <span class="lab">Mode</span>
+    <div class="tabs" id="tabs" role="tablist">
+      <button type="button" role="tab" data-mode="recast" aria-selected="true">Recast</button>
+      <button type="button" role="tab" data-mode="scene" aria-selected="false">Scene</button>
+      <button type="button" role="tab" data-mode="pfp" aria-selected="false">PFP</button>
+    </div>
+
+    <div id="dropwrap">
+      <span class="lab">The scene</span>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="image/*">
+        <div id="dropbody"><div class="hint">Drop an image, click, or paste</div></div>
+      </label>
+    </div>
+
+    <span class="lab" id="promptlab">Anything extra <span style="opacity:.6">(optional)</span></span>
+    <textarea id="prompt" placeholder="e.g. he is holding a bag of $NEAR"></textarea>
+
+    <span class="lab">Style</span>
+    <select id="style">
+      <option value="">Match the scene</option>
+      <option value="den">Inside the den</option>
+      <option value="safari">Kalahari daylight</option>
+      <option value="deepfried">Deep fried</option>
+      <option value="wojak">Wojak / MS Paint</option>
+      <option value="pixel">8-bit pixel</option>
+      <option value="vaporwave">Vaporwave</option>
+      <option value="gta">GTA box art</option>
+      <option value="oil">Oil painting</option>
+      <option value="anime">90s anime</option>
+      <option value="sticker">Sticker</option>
+    </select>
+
+    <span class="lab">How many</span>
+    <div class="pips" id="pips">
+      <button type="button" aria-pressed="true" data-n="1">1</button>
+      <button type="button" aria-pressed="false" data-n="2">2</button>
+      <button type="button" aria-pressed="false" data-n="3">3</button>
+      <button type="button" aria-pressed="false" data-n="4">4</button>
+    </div>
+
+    <button class="btn go" id="go" type="submit">Dig it up</button>
+    <div class="note" id="note">~20–30s each.</div>
+    <div id="err"></div>
+  </form>
+
+  <div class="card out" id="out">
+    <div class="idle">
+      <img class="sentry" src="trio.png" alt="">
+      Nothing dug up yet
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="wall">
+  <div class="wrap">
+    <div class="kick">Clan eyes only</div>
+    <h2>The <em>wall.</em></h2>
+    <p class="sub">Everything the clan chose to pin. Add yours with “Pin to wall”.</p>
+    <div class="walls" id="walls"><span class="empty">Loading…</span></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    Fan project. Not affiliated with NEAR Protocol or StonkFun. Generations are cartoons, not photographs, and not statements about any real person. You are responsible for what you make and where you post it.
+  </div>
+</footer>
+
+<script>
+(function(){
+  var API='/gen/api';
+  var mode='recast', variants=1, upload=null, uploadMime='image/png';
+  var $=function(i){return document.getElementById(i)};
+  var out=$('out'), err=$('err'), go=$('go');
+  var IDLE='<div class="idle"><img class="sentry" src="trio.png" alt="">';
+
+  $('tabs').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-mode]'); if(!b) return;
+    mode=b.dataset.mode;
+    [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-selected',String(x===b))});
+    var needsImg = mode==='recast';
+    $('dropwrap').style.display = needsImg ? '' : 'none';
+    $('promptlab').innerHTML = mode==='scene' ? 'Describe the scene' : 'Anything extra <span style="opacity:.6">(optional)</span>';
+    $('prompt').placeholder = needsImg ? 'e.g. he is holding a bag of $NEAR'
+      : (mode==='scene' ? 'e.g. standing lookout on a termite mound while hawks circle' : 'e.g. wearing tiny sunglasses');
+    $('style').options[0].textContent = needsImg ? 'Match the scene' : 'Nearkat cartoon style';
+  });
+
+  $('pips').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-n]'); if(!b) return;
+    variants=parseInt(b.dataset.n,10);
+    [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed',String(x===b))});
+    $('note').textContent='~20–30s each.'+(variants>1?' '+variants+' queue up one after another.':'');
+  });
+
+  /* upload */
+  var drop=$('drop'), body=$('dropbody');
+  function showUpload(dataUrl){
+    body.innerHTML='';
+    var img=document.createElement('img'); img.src=dataUrl; body.appendChild(img);
+    var x=document.createElement('button'); x.type='button'; x.className='clear'; x.textContent='Clear';
+    x.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();upload=null;body.innerHTML='<div class="hint">Drop an image, click, or paste</div>';x.remove()});
+    drop.appendChild(x);
+  }
+  function readFile(f){
+    if(!f || !/^image\//.test(f.type)) return;
+    uploadMime=f.type;
+    var r=new FileReader(); r.onload=function(){upload=String(r.result);showUpload(upload)}; r.readAsDataURL(f);
+  }
+  $('file').addEventListener('change',function(){readFile(this.files[0])});
+  ['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add('on')})});
+  ['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('on')})});
+  drop.addEventListener('drop',function(e){readFile(e.dataTransfer.files[0])});
+  window.addEventListener('paste',function(e){
+    var it=(e.clipboardData||{}).items||[];
+    for(var i=0;i<it.length;i++) if(/^image\//.test(it[i].type)) return readFile(it[i].getAsFile());
+  });
+
+  function busy(on,msg){go.disabled=on;go.innerHTML=on?'<span class="spin"></span>'+(msg||'Digging…'):'Dig it up'}
+  function fail(m,d){err.innerHTML='';var e=document.createElement('div');e.className='err';e.textContent=m+(d?' ('+d+')':'');err.appendChild(e)}
+
+  /* caption drawing (client-side, free) */
+  function drawCaption(canvas, img, top, bottom){
+    var w=img.naturalWidth, h=img.naturalHeight;
+    canvas.width=w; canvas.height=h;
+    var c=canvas.getContext('2d');
+    c.drawImage(img,0,0);
+    var size=Math.round(Math.max(w,h)*0.085);
+    c.font='900 '+size+'px DisplayX, "Archivo Black", Impact, "Arial Black", sans-serif';
+    c.textAlign='center'; c.lineJoin='round';
+    c.lineWidth=Math.max(2,size*0.11); c.strokeStyle='#000'; c.fillStyle='#fff';
+    function lines(t){
+      t=(t||'').toUpperCase().trim(); if(!t) return [];
+      var words=t.split(/\s+/), ls=[], cur='';
+      words.forEach(function(wd){var test=cur?cur+' '+wd:wd; if(c.measureText(test).width>w*0.92&&cur){ls.push(cur);cur=wd}else cur=test});
+      if(cur) ls.push(cur); return ls;
+    }
+    var lh=size*1.08;
+    lines(top).forEach(function(l,i){var y=size*1.05+i*lh; c.strokeText(l,w/2,y); c.fillText(l,w/2,y)});
+    var bl=lines(bottom);
+    bl.forEach(function(l,i){var y=h-size*0.35-(bl.length-1-i)*lh; c.strokeText(l,w/2,y); c.fillText(l,w/2,y)});
+  }
+
+  function card(dataB64){
+    var el=document.createElement('div'); el.className='res';
+    var img=new Image(); img.src='data:image/png;base64,'+dataB64;
+    var canvas=document.createElement('canvas'); el.appendChild(canvas);
+    var cap=document.createElement('div'); cap.className='cap';
+    var ti=document.createElement('input'); ti.type='text'; ti.placeholder='TOP TEXT'; ti.maxLength=80;
+    var bi=document.createElement('input'); bi.type='text'; bi.placeholder='BOTTOM TEXT'; bi.maxLength=80;
+    cap.appendChild(ti); cap.appendChild(bi); el.appendChild(cap);
+    function redraw(){ if(img.complete) drawCaption(canvas,img,ti.value,bi.value); }
+    img.onload=redraw; ti.addEventListener('input',redraw); bi.addEventListener('input',redraw);
+    if(document.fonts && document.fonts.load) document.fonts.load('900 40px DisplayX').then(redraw);
+
+    var acts=document.createElement('div'); acts.className='acts';
+    var dl=document.createElement('a'); dl.className='btn sm'; dl.textContent='Download';
+    dl.href='#'; dl.download='nearkat-'+Date.now()+'.png';
+    dl.addEventListener('click',function(){ dl.href=canvas.toDataURL('image/png'); });
+    acts.appendChild(dl);
+
+    var fx=document.createElement('button'); fx.type='button'; fx.className='btn line sm'; fx.textContent='Fix the face';
+    fx.addEventListener('click',function(){
+      fx.disabled=true; fx.textContent='Fixing…';
+      fetch(API+'/fix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:img.src})})
+      .then(function(r){return r.json()})
+      .then(function(d){ if(d.image){ img.src='data:image/png;base64,'+d.image; } else fail(d.error||'Fix failed.', d.detail); })
+      .catch(function(){fail('Fix failed.')})
+      .then(function(){fx.disabled=false;fx.textContent='Fix the face'});
+    });
+    acts.appendChild(fx);
+
+    var pin=document.createElement('button'); pin.type='button'; pin.className='btn line sm'; pin.textContent='Pin to wall';
+    pin.addEventListener('click',function(){
+      pin.disabled=true; pin.textContent='Pinning…';
+      fetch(API+'/save',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({image:canvas.toDataURL('image/png'), prompt:$('prompt').value})})
+      .then(function(r){return r.json()})
+      .then(function(d){ if(d.ok){pin.textContent='Pinned';loadWall()} else {pin.disabled=false;pin.textContent='Pin to wall';fail(d.error||'Could not pin.')} })
+      .catch(function(){pin.disabled=false;pin.textContent='Pin to wall';fail('Could not pin.')});
+    });
+    acts.appendChild(pin);
+    el.appendChild(acts);
+    return el;
+  }
+
+  $('form').addEventListener('submit',function(e){
+    e.preventDefault(); err.innerHTML='';
+    if(mode==='recast' && !upload) return fail('Drop a scene first.');
+    if(mode==='scene' && !$('prompt').value.trim()) return fail('Describe the scene first.');
+    busy(true);
+    out.innerHTML=IDLE+'Digging…</div>';
+    var payload={mode:mode, prompt:$('prompt').value, style:$('style').value, variants:variants};
+    if(upload){payload.imageBase64=upload;payload.mimeType=uploadMime}
+    fetch(API+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d}})})
+    .then(function(res){
+      if(!res.ok || !res.d.images || !res.d.images.length){ out.innerHTML=IDLE+'Nothing down there</div>'; return fail(res.d.error||'Nothing came back.', res.d.detail); }
+      out.innerHTML='';
+      var g=document.createElement('div'); g.className='results';
+      res.d.images.forEach(function(b){g.appendChild(card(b))});
+      out.appendChild(g);
+      $('note').textContent='Last dig: '+res.d.time+'s for '+res.d.images.length+'.';
+    })
+    .catch(function(){out.innerHTML=IDLE+'Nothing down there</div>';fail('Request failed.')})
+    .then(function(){busy(false)});
+  });
+
+  function loadWall(){
+    fetch(API+'/library?limit=48').then(function(r){return r.json()}).then(function(d){
+      var w=$('walls');
+      if(!d.items || !d.items.length){w.innerHTML='<span class="empty">Nothing pinned yet. Be first.</span>';return}
+      w.innerHTML='';
+      d.items.forEach(function(it){var a=document.createElement('a');a.href=it.url;a.target='_blank';a.rel='noopener';var i=document.createElement('img');i.src=it.url;i.loading='lazy';i.alt='';a.appendChild(i);w.appendChild(a)});
+    }).catch(function(){$('walls').innerHTML='<span class="empty">Wall unavailable.</span>'});
+  }
+  loadWall();
+})();
+</script>
+</body>
+</html>
