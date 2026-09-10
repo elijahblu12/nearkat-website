@@ -1,6 +1,7 @@
 (function () {
   'use strict';
   var MINT = '6UtY9iTZMQQ5QZVrbzFnNaJntV7oySm9k97mvwnuZcxr';
+  var TOTAL_SUPPLY = 1000000000;
   var SF = 'https://www.stonkfun.xyz/api/public/v1/tokens/' + MINT;
   var $ = function (id) { return document.getElementById(id); };
   function setAll(sel, t) { Array.prototype.forEach.call(document.querySelectorAll(sel), function (e) { e.textContent = t; }); }
@@ -22,6 +23,15 @@
     if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
     return '$' + n.toFixed(0);
   }
+  function pct(value, digits) {
+    if (value == null || !isFinite(value)) return '—';
+    return (value * 100).toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits }) + '%';
+  }
+  function nearAmount(value) {
+    if (value == null || !isFinite(value)) return '—';
+    var d = Math.abs(value) < 1 ? 4 : Math.abs(value) < 100 ? 2 : 1;
+    return num(value, d);
+  }
   function ago(iso) {
     if (!iso) return '—';
     var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -34,6 +44,42 @@
     return fetch(url, { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error(url + ' ' + r.status);
       return r.json();
+    });
+  }
+  function positionEstimate(data, tokens) {
+    var tokenPrice = Number(data && data.token && data.token.priceUsd) || 0;
+    var nearUsd = Number(data && data.prices && data.prices.nearUsd) || 0;
+    var configuredSupply = Number(data && data.calibration && data.calibration.eligibleSupply);
+    var supply = configuredSupply > 0 ? configuredSupply : TOTAL_SUPPLY;
+    var poolNearDay = Number(data && data.observed && data.observed.nearPerDay);
+    var position = Math.max(0, Number(tokens) || 0);
+    var valueUsd = tokenPrice ? position * tokenPrice : 0;
+    var share = supply ? Math.min(position / supply, 1) : 0;
+    var nearDay = isFinite(poolNearDay) ? poolNearDay * share : null;
+    var usdDay = nearDay != null && nearUsd ? nearDay * nearUsd : null;
+    return {
+      tokens: position,
+      tokenPrice: tokenPrice,
+      nearUsd: nearUsd,
+      supply: supply,
+      valueUsd: valueUsd,
+      share: share,
+      poolNearDay: poolNearDay,
+      nearDay: nearDay,
+      usdDay: usdDay,
+      dailyRate: valueUsd && usdDay != null ? usdDay / valueUsd : null
+    };
+  }
+  function rationStatus(tokens, valueUsd) {
+    if (!(Number(tokens) > 0)) return { key: 'empty', label: 'no kat in this hole.' };
+    if (Number(valueUsd) >= 20) return { key: 'eligible', label: 'eligible' };
+    return { key: 'under', label: 'under the $20 ration line' };
+  }
+  var liveRewardData = null;
+  function fetchRewardData() {
+    return getJSON('/api/nearkat/rewards').then(function (data) {
+      liveRewardData = data;
+      return data;
     });
   }
 
@@ -191,15 +237,6 @@
     function inputFormat(value) {
       return Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
     }
-    function pct(value, digits) {
-      if (value == null || !isFinite(value)) return '—';
-      return (value * 100).toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits }) + '%';
-    }
-    function nearAmount(value) {
-      if (value == null || !isFinite(value)) return '—';
-      var d = Math.abs(value) < 1 ? 4 : Math.abs(value) < 100 ? 2 : 1;
-      return num(value, d);
-    }
     function setPresetButtons() {
       var tokenPresets = [250000, 1000000, 5000000, 10000000];
       var usdPresets = [100, 500, 1000, 5000];
@@ -219,16 +256,16 @@
 
       var entered = parseAmount(calcInput.value);
       var tokenPrice = Number(calcData.token && calcData.token.priceUsd) || 0;
-      var nearPrice = Number(calcData.prices && calcData.prices.nearUsd) || 0;
-      var supply = Number(calcData.calibration && calcData.calibration.eligibleSupply) || 0;
       var observed = calcData.observed || {};
-      var poolNearDay = Number(observed.nearPerDay);
       var tokens = calcMode === 'tokens' ? entered : (tokenPrice ? entered / tokenPrice : 0);
-      var valueUsd = tokenPrice ? tokens * tokenPrice : 0;
-      var share = supply ? Math.min(tokens / supply, 1) : 0;
-      var nearDay = isFinite(poolNearDay) ? poolNearDay * share : null;
-      var usdDay = nearDay != null && nearPrice ? nearDay * nearPrice : null;
-      var dailyRate = valueUsd && usdDay != null ? usdDay / valueUsd : null;
+      var estimate = positionEstimate(calcData, tokens);
+      var supply = estimate.supply;
+      var valueUsd = estimate.valueUsd;
+      var share = estimate.share;
+      var poolNearDay = estimate.poolNearDay;
+      var nearDay = estimate.nearDay;
+      var usdDay = estimate.usdDay;
+      var dailyRate = estimate.dailyRate;
 
       calcText('calc-worth', valueUsd ? usd(valueUsd) : '$0');
       calcText('calc-token-price', tokenPrice ? 'at ' + usd(tokenPrice, 5) : '');
@@ -262,10 +299,7 @@
       calcText('calc-note', note);
     }
     function loadCalculator() {
-      fetch('/api/nearkat/rewards', { cache: 'no-store' }).then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-      }).then(function (data) {
+      fetchRewardData().then(function (data) {
         calcData = data;
         var status = $('calc-status');
         status.classList.remove('error');
@@ -302,5 +336,156 @@
 
     loadCalculator();
     setInterval(loadCalculator, 45000);
+  }
+
+  /* ---------- public wallet lookout ---------- */
+  var lookoutRoot = $('lookout');
+  if (lookoutRoot) {
+    var BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    var lookoutForm = $('lookout-form');
+    var lookoutInput = $('lookout-address');
+    var lookoutButton = $('lookout-submit');
+    var lookoutResult = $('lookout-result');
+    var lastLookoutAddress = '';
+
+    function isSolanaAddress(value) {
+      var address = String(value || '').trim();
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) return false;
+      var number = 0n;
+      for (var i = 0; i < address.length; i++) {
+        var digit = BASE58.indexOf(address[i]);
+        if (digit < 0) return false;
+        number = number * 58n + BigInt(digit);
+      }
+      var payloadBytes = number === 0n ? 0 : Math.ceil(number.toString(16).length / 2);
+      var leading = (address.match(/^1*/) || [''])[0].length;
+      return payloadBytes + leading === 32;
+    }
+    function lookoutText(id, value) {
+      var el = $(id);
+      if (el) el.textContent = value;
+    }
+    function setLookoutMessage(text, error) {
+      var message = $('lookout-message');
+      message.textContent = text || '';
+      message.classList.toggle('error', !!error);
+    }
+    function truncateAddress(address) {
+      return address.slice(0, 6) + '…' + address.slice(-6);
+    }
+    function setLookoutLoading(loading) {
+      lookoutButton.disabled = loading;
+      lookoutButton.textContent = loading ? 'lookout moving…' : 'post lookout';
+    }
+    function renderLookout(address, data, balance) {
+      var estimate = positionEstimate(data, balance);
+      var status = rationStatus(balance, estimate.valueUsd);
+
+      lastLookoutAddress = address;
+      try { localStorage.setItem('nearkat-lookout-wallet', address); } catch (e) {}
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '/?w=' + encodeURIComponent(address) + '#lookout');
+      }
+
+      lookoutText('lookout-wallet', truncateAddress(address));
+      $('lookout-solscan').href = 'https://solscan.io/account/' + encodeURIComponent(address);
+      lookoutText('lookout-bag', num(balance, balance < 1 ? 4 : 0) + ' NEARKAT');
+      lookoutText('lookout-worth', usd(estimate.valueUsd) + ' at ' + usd(estimate.tokenPrice, 5));
+      lookoutText('lookout-share', pct(estimate.share, estimate.share < .001 ? 4 : 2) + ' of ' + compact(estimate.supply).replace('$', ''));
+
+      var eligibility = $('lookout-eligibility');
+      eligibility.textContent = status.label;
+      eligibility.className = status.key;
+
+      lookoutText('lookout-near-day', nearAmount(estimate.nearDay) + ' NEAR');
+      lookoutText('lookout-usd-day', estimate.usdDay == null ? '≈ —' : '≈ ' + usd(estimate.usdDay, estimate.usdDay < 1 ? 2 : 0));
+      lookoutText('lookout-near-7', nearAmount(estimate.nearDay == null ? null : estimate.nearDay * 7) + ' NEAR');
+      lookoutText('lookout-usd-7', estimate.usdDay == null ? '≈ —' : '≈ ' + usd(estimate.usdDay * 7));
+      lookoutText('lookout-near-30', nearAmount(estimate.nearDay == null ? null : estimate.nearDay * 30) + ' NEAR');
+      lookoutText('lookout-usd-30', estimate.usdDay == null ? '≈ —' : '≈ ' + usd(estimate.usdDay * 30));
+
+      var calibration = data.calibration || {};
+      var note = calibration.calibrated
+        ? 'this is a lookout, not a claim.\nrations land in the wallet that holds.\nshare uses the latest calibrated eligible supply.\nestimates are not guaranteed.'
+        : 'this is a lookout, not a claim.\nrations land in the wallet that holds.\neligible supply is not calibrated yet, so share uses the full 1.00B.\nestimates are not guaranteed.';
+      $('lookout-result').querySelector('.lookout-note').textContent = note;
+      lookoutResult.hidden = false;
+      setLookoutMessage(status.key === 'empty' ? status.label : '', false);
+    }
+    function runLookout(value) {
+      var address = String(value || '').trim();
+      lookoutInput.value = address;
+      if (!isSolanaAddress(address)) {
+        lookoutResult.hidden = true;
+        setLookoutMessage('that is not a Solana tunnel.', true);
+        return Promise.resolve(false);
+      }
+
+      setLookoutLoading(true);
+      setLookoutMessage('lookout moving…', false);
+      return Promise.all([
+        fetch('/api/nearkat/lookout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ address: address })
+        }).then(function (response) {
+          if (!response.ok) throw new Error('balance lookup failed');
+          return response.json();
+        }),
+        liveRewardData ? Promise.resolve(liveRewardData) : fetchRewardData()
+      ]).then(function (results) {
+        renderLookout(address, results[1], Number(results[0].balance) || 0);
+        return true;
+      }).catch(function () {
+        lookoutResult.hidden = true;
+        setLookoutMessage('lookout lost the trail. try again.', true);
+        return false;
+      }).then(function (success) {
+        setLookoutLoading(false);
+        return success;
+      });
+    }
+    function startupAddress() {
+      var url = new URL(window.location.href);
+      var address = url.searchParams.get('w');
+      var fromUrl = !!address;
+      if (!address && url.hash.indexOf('?') >= 0) {
+        address = new URLSearchParams(url.hash.split('?')[1]).get('w');
+        fromUrl = !!address;
+      }
+      if (!address) {
+        var pathMatch = url.pathname.match(/^\/lookout\/([^/]+)\/?$/);
+        if (pathMatch) {
+          try { address = decodeURIComponent(pathMatch[1]); } catch (e) { address = pathMatch[1]; }
+          fromUrl = true;
+        }
+      }
+      if (!address) {
+        try { address = localStorage.getItem('nearkat-lookout-wallet'); } catch (e) {}
+      }
+      return { address: address, fromUrl: fromUrl };
+    }
+
+    lookoutForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      runLookout(lookoutInput.value);
+    });
+    $('lookout-copy').addEventListener('click', function () {
+      if (!lastLookoutAddress) return;
+      var done = function () { say('Address copied.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lastLookoutAddress).then(done, function () { fallback(lastLookoutAddress); done(); });
+      } else {
+        fallback(lastLookoutAddress); done();
+      }
+    });
+
+    var startup = startupAddress();
+    if (startup.address) {
+      runLookout(startup.address);
+      if (startup.fromUrl && location.hash.indexOf('lookout') < 0) {
+        setTimeout(function () { lookoutRoot.scrollIntoView(); }, 0);
+      }
+    }
   }
 })();
