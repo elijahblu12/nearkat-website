@@ -39,7 +39,6 @@
   <nav class="links">
     <a href="#rations">Rations</a>
     <a href="#calculator">Calculator</a>
-    <a href="#lookout">Lookout</a>
     <a href="#mob">Mob</a>
     <a href="#upgrades">Upgrades</a>
     <a href="#entrance">Entrance</a>
@@ -203,61 +202,7 @@
     </div>
   </section>
 
-  <div class="tunnel tl" aria-hidden="true"><svg viewBox="0 0 200 260" preserveAspectRatio="none"><path class="bore" d="M60 0 C 40 70, 120 100, 90 170 S 60 240, 84 260 L 112 260 C 130 220, 90 180, 120 130 S 100 50, 92 0 Z"/></svg></div>
-
-  <!-- ---------- THE LOOKOUT ---------- -->
-  <section class="chamber lookout-chamber" id="lookout">
-    <div class="chamber-shell">
-      <div class="marker"><span class="m-depth">−9 m</span><span class="m-name">THE LOOKOUT</span></div>
-      <div class="chamber-copy wide">
-        <h2>Inspect a <em>tunnel.</em></h2>
-        <p class="body">Paste a Solana address. The lookout reports the bag. No signature. No claim. Rations land in the wallet that holds.</p>
-
-        <div class="lookout-tool">
-          <form class="lookout-form" id="lookout-form" novalidate>
-            <label for="lookout-address">Solana tunnel</label>
-            <div class="lookout-field">
-              <input id="lookout-address" name="address" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Solana address" aria-describedby="lookout-helper lookout-message">
-              <button class="btn btn-green" id="lookout-submit" type="submit">post lookout</button>
-            </div>
-            <p class="lookout-helper" id="lookout-helper">Anyone can inspect any hole.</p>
-            <p class="lookout-message" id="lookout-message" role="status" aria-live="polite"></p>
-          </form>
-
-          <article class="lookout-result" id="lookout-result" hidden aria-live="polite">
-            <div class="lookout-found">
-              <span>tunnel found</span>
-              <div>
-                <code id="lookout-wallet">—</code>
-                <a id="lookout-solscan" href="#" target="_blank" rel="noopener">open on Solscan</a>
-                <button type="button" id="lookout-copy">copy</button>
-              </div>
-            </div>
-
-            <dl class="lookout-facts">
-              <div><dt>bag</dt><dd id="lookout-bag">—</dd></div>
-              <div><dt>worth</dt><dd id="lookout-worth">—</dd></div>
-              <div><dt>share</dt><dd id="lookout-share">—</dd></div>
-              <div><dt>sentry</dt><dd id="lookout-eligibility">—</dd></div>
-            </dl>
-
-            <div class="lookout-rations">
-              <span class="lookout-overline">estimated ration</span>
-              <dl>
-                <div><dt>per day</dt><dd><strong id="lookout-near-day">—</strong><span id="lookout-usd-day">≈ —</span></dd></div>
-                <div><dt>7 days</dt><dd><strong id="lookout-near-7">—</strong><span id="lookout-usd-7">≈ —</span></dd></div>
-                <div><dt>30 days</dt><dd><strong id="lookout-near-30">—</strong><span id="lookout-usd-30">≈ —</span></dd></div>
-              </dl>
-            </div>
-
-            <p class="lookout-note">this is a lookout, not a claim.<br>rations land in the wallet that holds.<br>eligible supply is not calibrated yet, so share uses the full 1.00B.<br>estimates are not guaranteed.</p>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="tunnel t1" aria-hidden="true"><svg viewBox="0 0 200 260" preserveAspectRatio="none"><path class="bore" d="M120 0 C 150 60, 80 110, 110 170 S 140 240, 116 260 L 88 260 C 70 220, 110 180, 80 130 S 100 50, 88 0 Z"/></svg></div>
+  <div class="tunnel t1" aria-hidden="true"><svg viewBox="0 0 200 260" preserveAspectRatio="none"><path class="bore" d="M60 0 C 40 70, 120 100, 90 170 S 60 240, 84 260 L 112 260 C 130 220, 90 180, 120 130 S 100 50, 92 0 Z"/></svg></div>
 
   <!-- ---------- THE MOB ---------- -->
   <section class="chamber mob" id="mob">
@@ -375,7 +320,6 @@ nearkats, rewards in $NEAR. not IOUs from the sky.</pre>
           <a class="door" href="https://dexscreener.com/solana/6UtY9iTZMQQ5QZVrbzFnNaJntV7oySm9k97mvwnuZcxr" target="_blank" rel="noopener"><span class="d-id">04</span><strong>Dexscreener</strong><span>the chart</span></a>
           <a class="door" href="https://x.com/NearKatSol" target="_blank" rel="noopener"><span class="d-id">05</span><strong>@NearKatSol</strong><span>the lookout line</span></a>
           <a class="door door-gen" href="/gen/"><span class="d-id">06</span><strong>The meme den</strong><span>make your own Nearkat</span></a>
-          <a class="door" href="#lookout"><span class="d-id">07</span><strong>The lookout</strong><span>inspect a Solana tunnel</span></a>
         </div>
       </div>
     </div>

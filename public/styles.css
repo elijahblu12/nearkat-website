@@ -207,11 +207,10 @@ h1{
 .bore{fill:#120d09;stroke:rgba(243,234,216,.14);stroke-width:3;filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}
 .tunnel.t0{margin-top:-12px}
 .tunnel.tc{margin-left:61%}
-.tunnel.tl{margin-left:22%}
 .tunnel.t1{margin-left:22%}
 .tunnel.t2{margin-left:58%}
 .tunnel.t3{margin-left:34%}
-@media (max-width:700px){.tunnel{height:130px;width:44vw}.tunnel.tc{margin-left:48%}.tunnel.tl{margin-left:18%}.tunnel.t1{margin-left:44%}.tunnel.t2{margin-left:44%}.tunnel.t3{margin-left:28%}}
+@media (max-width:700px){.tunnel{height:130px;width:44vw}.tunnel.tc{margin-left:48%}.tunnel.t1{margin-left:18%}.tunnel.t2{margin-left:44%}.tunnel.t3{margin-left:28%}}
 
 /* chambers */
 .chamber{padding:40px clamp(12px,3vw,40px)}
@@ -333,60 +332,6 @@ h1{
 .calc-lambo>div strong{font-family:var(--mono);font-size:24px;color:var(--green)}
 .calc-note{margin-top:17px;font-size:11.5px;line-height:1.6;color:rgba(243,234,216,.48)}
 
-/* public wallet lookout */
-.lookout-chamber .chamber-shell{
-  display:block;min-height:0;
-  background:radial-gradient(circle at 14% 18%,rgba(0,236,151,.08),transparent 32%),#14100c;
-  border-radius:190px 140px 220px 160px / 135px 105px 150px 125px;
-}
-.lookout-chamber .chamber-copy.wide{padding-bottom:clamp(64px,8vw,100px)}
-.lookout-tool{
-  margin-top:28px;padding:clamp(18px,3vw,34px);border-radius:24px;
-  background:#0b0806;border:1px solid rgba(0,236,151,.22);
-  box-shadow:inset 0 0 0 5px rgba(243,234,216,.025),0 24px 70px rgba(0,0,0,.35);
-}
-.lookout-form label,.lookout-overline,.lookout-facts dt,.lookout-rations dt{
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,234,216,.58)
-}
-.lookout-field{display:flex;align-items:stretch;gap:10px;margin-top:10px}
-.lookout-field input{
-  width:100%;min-width:0;border:1px solid rgba(243,234,216,.16);border-radius:14px;outline:0;
-  background:rgba(0,0,0,.4);color:var(--bone);padding:13px 15px;
-  font-family:var(--mono);font-size:clamp(14px,1.8vw,18px)
-}
-.lookout-field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,236,151,.1)}
-.lookout-field .btn{white-space:nowrap;border:0;cursor:pointer}
-.lookout-field .btn:disabled{cursor:wait;opacity:.58}
-.lookout-helper,.lookout-message{font-size:12px;color:rgba(243,234,216,.48)}
-.lookout-helper{margin-top:8px}
-.lookout-message{min-height:19px;margin-top:5px;font-family:var(--mono)}
-.lookout-message.error{color:#ffb347}
-.lookout-result{margin-top:12px;padding-top:20px;border-top:1px solid rgba(243,234,216,.09)}
-.lookout-found{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
-.lookout-found>span{font-family:var(--display);font-size:22px;color:var(--green)}
-.lookout-found>div{display:flex;align-items:center;gap:8px;min-width:0}
-.lookout-found a{color:var(--bone-dim);text-decoration:none;font-family:var(--mono);font-size:10px;white-space:nowrap}
-.lookout-found code{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere}
-.lookout-found button{
-  border:0;background:none;color:var(--green);font-family:var(--mono);font-size:11px;
-  text-transform:uppercase;letter-spacing:.08em;cursor:pointer
-}
-.lookout-found a:hover,.lookout-found button:hover{color:var(--green)}
-.lookout-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
-.lookout-facts div{min-width:0;padding:13px 14px;border-radius:13px;background:rgba(243,234,216,.045);border:1px solid rgba(243,234,216,.08)}
-.lookout-facts dd{margin-top:6px;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--bone);overflow-wrap:anywhere}
-.lookout-facts dd.eligible{color:var(--green)}
-.lookout-facts dd.under{color:#ffb347}
-.lookout-facts dd.empty{color:var(--bone-dim)}
-.lookout-rations{margin-top:20px;padding:18px;border-radius:16px;background:rgba(0,236,151,.055);border:1px solid rgba(0,236,151,.15)}
-.lookout-overline{color:var(--green)}
-.lookout-rations dl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:13px}
-.lookout-rations dl>div{min-width:0}
-.lookout-rations dd{display:flex;flex-direction:column;gap:3px;margin-top:5px}
-.lookout-rations strong{font-family:var(--mono);font-size:18px;color:var(--bone)}
-.lookout-rations span{font-family:var(--mono);font-size:11px;color:var(--bone-dim)}
-.lookout-note{margin-top:17px;font-size:11.5px;line-height:1.65;white-space:pre-line;color:rgba(243,234,216,.48)}
-
 /* rules + redaction */
 .rules{list-style:none;display:grid;gap:14px;margin-top:22px}
 .rules li{padding:16px 18px;border-radius:14px;background:rgba(243,234,216,.04);border:1px solid rgba(243,234,216,.08)}
@@ -494,7 +439,7 @@ h1{
   .branches{margin-top:0}
   .stats{grid-template-columns:repeat(2,1fr)}
   .marker{top:16px}
-  .calculator-chamber .chamber-shell,.lookout-chamber .chamber-shell{border-radius:44px 60px 50px 64px / 40px 48px 56px 44px}
+  .calculator-chamber .chamber-shell{border-radius:44px 60px 50px 64px / 40px 48px 56px 44px}
 }
 @media (max-width:560px){
   .chamber{padding:24px 10px}
@@ -515,9 +460,4 @@ h1{
   .calc-main-value{flex-wrap:wrap}
   .calc-main-value strong{font-size:clamp(40px,15vw,58px)}
   .calc-periods strong{font-size:16px}
-  .lookout-field{flex-direction:column}
-  .lookout-field .btn{justify-content:center}
-  .lookout-found{flex-direction:column;gap:8px}
-  .lookout-facts{grid-template-columns:repeat(2,1fr)}
-  .lookout-rations dl{grid-template-columns:1fr}
 }
