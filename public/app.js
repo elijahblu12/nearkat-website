@@ -160,7 +160,7 @@
   var copyBtn = $('copy');
   if (copyBtn) copyBtn.addEventListener('click', function () {
     var ca = $('ca').textContent.trim();
-    var done = function () { say('CA copied. Welcome to the clan.'); };
+    var done = function () { say('CA copied. Welcome to the mob.'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ca).then(done, function () { fallback(ca); done(); });
     else { fallback(ca); done(); }
   });
