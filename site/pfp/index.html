@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The PFP Den — $NEARKAT</title>
-<meta name="description" content="Prompt a square NEARKAT profile picture while the official mascot stays locked.">
+<meta name="description" content="Prompt a square NEARKAT profile picture with a consistent private-reference mascot.">
 <meta name="theme-color" content="#0b0806">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png">
 <link rel="apple-touch-icon" href="/img/icon-180.png">
@@ -35,14 +35,14 @@ h1 em{color:var(--green);font-style:normal}
 .lede{max-width:64ch;margin:18px 0 0;color:var(--dim);font-size:17px}
 .work{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:22px;padding:18px 0 64px;align-items:start}
 .card{border:1px solid var(--line);border-radius:22px;background:var(--panel);padding:22px;box-shadow:inset 0 0 0 4px rgba(243,234,216,.025),0 24px 60px rgba(0,0,0,.42)}
-.lock{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:center;margin-bottom:22px;padding:13px;border:1px solid rgba(0,236,151,.24);border-radius:16px;background:rgba(0,236,151,.055)}
-.lock img{width:72px;height:72px;border-radius:50%;box-shadow:0 0 0 2px var(--green)}
+.lock{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center;margin-bottom:22px;padding:13px;border:1px solid rgba(0,236,151,.24);border-radius:16px;background:rgba(0,236,151,.055)}
+.lock-mark{display:grid;place-items:center;width:56px;height:56px;border:2px solid var(--green);border-radius:50%;color:var(--green);font:900 25px var(--mono);box-shadow:inset 0 0 22px rgba(0,236,151,.12)}
 .lock strong{display:block;color:var(--green);font:900 13px var(--mono);letter-spacing:.1em;text-transform:uppercase}
 .lock span{display:block;margin-top:4px;color:var(--dim);font-size:13px;line-height:1.4}
 label{display:block;margin:18px 0 8px;color:rgba(243,234,216,.57);font:700 11px var(--mono);letter-spacing:.17em;text-transform:uppercase}
-textarea,select{width:100%;border:1px solid rgba(243,234,216,.18);border-radius:12px;background:rgba(0,0,0,.38);color:var(--bone);font:500 15px var(--ui);padding:12px}
+textarea{width:100%;border:1px solid rgba(243,234,216,.18);border-radius:12px;background:rgba(0,0,0,.38);color:var(--bone);font:500 15px var(--ui);padding:12px}
 textarea{min-height:112px;resize:vertical}
-textarea:focus,select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(0,236,151,.08)}
+textarea:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(0,236,151,.08)}
 .examples{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
 .chip{border:1px solid rgba(243,234,216,.16);border-radius:999px;background:transparent;color:var(--dim);padding:7px 10px;cursor:pointer;font:700 10px var(--mono)}
 .chip:hover{border-color:var(--green);color:var(--green)}
@@ -54,7 +54,7 @@ textarea:focus,select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0
 .spin{width:15px;height:15px;border:2px solid rgba(6,61,43,.25);border-top-color:var(--green-ink);border-radius:50%;animation:spin .75s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .stage{display:grid;place-items:center;min-height:560px;overflow:hidden;background:radial-gradient(circle at 50% 38%,rgba(0,236,151,.08),transparent 46%),#100c09}
 .idle{text-align:center;color:var(--dim);font:700 12px/1.8 var(--mono);letter-spacing:.1em;text-transform:uppercase}
-.idle img{display:block;width:118px;margin:0 auto 17px;filter:drop-shadow(0 13px 24px rgba(0,0,0,.65))}
+.idle .signal{display:grid;place-items:center;width:92px;height:92px;margin:0 auto 17px;border:2px solid rgba(0,236,151,.5);border-radius:50%;color:var(--green);font:900 35px var(--mono);box-shadow:0 0 45px rgba(0,236,151,.1)}
 .result{display:none;width:min(100%,650px)}
 .result.ready{display:block}
 .canvas-wrap{position:relative;padding:9px;border:1px solid rgba(0,236,151,.25);border-radius:22px;background:#080604;box-shadow:0 24px 60px rgba(0,0,0,.46)}
@@ -75,41 +75,31 @@ footer{border-top:1px solid var(--line);background:#000;padding:32px 0;color:rgb
   <section class="mast"><div class="wrap">
     <div class="kick">Chamber −34 m · the pfp den</div>
     <h1>Prompt the world. <em>Keep the kat.</em></h1>
-    <p class="lede">Describe the tunnel around him. The official NEARKAT mascot stays locked while the setting, color and mood move.</p>
+    <p class="lede">Describe the pose, fit and tunnel. A private reference sheet keeps the same face, fur, eyes, stripes and tail every time.</p>
   </div></section>
 
   <div class="wrap"><div class="work">
     <form class="card" id="pfp-form">
-      <div class="lock"><img src="/img/icon-180.png" alt="Official NEARKAT mascot"><div><strong>Mascot locked</strong><span>This face is never redrawn. Your prompt changes the world around it.</span></div></div>
+      <div class="lock"><div class="lock-mark" aria-hidden="true">K</div><div><strong>Identity sealed</strong><span>The private reference pack stays server-side. Prompts can move the kat, dress it and set the scene.</span></div></div>
 
-      <label for="prompt">Tell the tunnel what to wear</label>
-      <textarea id="prompt" maxlength="220" placeholder="neon rain over a midnight desert, green signal lights" required></textarea>
+      <label for="prompt">Direct the kat</label>
+      <textarea id="prompt" maxlength="500" placeholder="wearing a black tunnel jacket, leaning on a shovel under green signal lights" required></textarea>
       <div class="examples" aria-label="Prompt examples">
-        <button class="chip" type="button" data-prompt="neon rain over a midnight desert, green signal lights">neon rain</button>
-        <button class="chip" type="button" data-prompt="golden sunrise over the Kalahari, long shadows and warm dust">sunrise watch</button>
-        <button class="chip" type="button" data-prompt="deep underground command room, glowing maps and carved stone">deep command</button>
+        <button class="chip" type="button" data-prompt="wearing a black tunnel jacket, leaning on a shovel under green signal lights">tunnel jacket</button>
+        <button class="chip" type="button" data-prompt="in a tiny astronaut suit, floating above the Kalahari with a confident grin">space kat</button>
+        <button class="chip" type="button" data-prompt="arms crossed in an underground command room, cinematic green rim light">deep command</button>
       </div>
 
-      <label for="style">Surface</label>
-      <select id="style">
-        <option value="den">Inside the den</option>
-        <option value="kalahari">Kalahari daylight</option>
-        <option value="neon">Neon signal</option>
-        <option value="pixel">16-bit tunnel</option>
-        <option value="anime">90s anime</option>
-        <option value="oil">Oil painted</option>
-      </select>
-
       <button class="btn go" id="dig" type="submit">forge my pfp</button>
-      <div class="note" id="status" role="status" aria-live="polite">Square. 1024 × 1024. The mascot stays official.</div>
+      <div class="note" id="status" role="status" aria-live="polite">Square. 1024 × 1024. Same kat, new tunnel.</div>
     </form>
 
     <section class="card stage" aria-label="Generated profile picture">
-      <div class="idle" id="idle"><img src="/img/icon-180.png" alt="">Nothing forged yet<br>give the tunnel a direction</div>
+      <div class="idle" id="idle"><span class="signal" aria-hidden="true">K</span>Nothing forged yet<br>give the kat a direction</div>
       <div class="result" id="result">
-        <div class="canvas-wrap"><canvas id="canvas" width="1024" height="1024"></canvas><span class="stamp">official kat locked</span></div>
+        <div class="canvas-wrap"><canvas id="canvas" width="1024" height="1024"></canvas><span class="stamp">identity guided</span></div>
         <div class="actions"><button class="btn" id="download" type="button">download pfp</button><button class="btn line" id="reroll" type="button">new tunnel, same prompt</button></div>
-        <p class="fine">The backdrop is generated. The mascot layer is the fixed NEARKAT original.</p>
+        <p class="fine">Pose, outfit and setting can move. The mascot identity stays sealed to its private reference sheet.</p>
       </div>
     </section>
   </div></div>
@@ -121,41 +111,20 @@ footer{border-top:1px solid var(--line);background:#000;padding:32px 0;color:rgb
 (function(){
   'use strict';
   var $=function(id){return document.getElementById(id)};
-  var form=$('pfp-form'),prompt=$('prompt'),style=$('style'),dig=$('dig'),status=$('status');
+  var form=$('pfp-form'),prompt=$('prompt'),dig=$('dig'),status=$('status');
   var canvas=$('canvas'),ctx=canvas.getContext('2d'),result=$('result'),idle=$('idle');
-  var mascot=new Image();mascot.src='/img/icon-180.png';
-  var lastSeed=0;
-
-  function hash(text){var h=2166136261;for(var i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
-  function seeded(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}}
   function cover(img){var s=Math.max(1024/img.naturalWidth,1024/img.naturalHeight),w=img.naturalWidth*s,h=img.naturalHeight*s;ctx.drawImage(img,(1024-w)/2,(1024-h)/2,w,h)}
-  function localBackdrop(text){
-    var seed=hash(text),rand=seeded(seed),hue=seed%360;
-    var g=ctx.createRadialGradient(512,420,40,512,512,760);g.addColorStop(0,'hsl('+hue+' 58% 28%)');g.addColorStop(.56,'hsl('+((hue+55)%360)+' 45% 14%)');g.addColorStop(1,'#080604');ctx.fillStyle=g;ctx.fillRect(0,0,1024,1024);
-    ctx.globalAlpha=.22;for(var i=0;i<34;i++){ctx.beginPath();ctx.strokeStyle=i%3===0?'#00ec97':'#f3ead8';ctx.lineWidth=2+rand()*8;ctx.arc(512,512,120+i*19,rand()*6.2,rand()*6.2+1.2);ctx.stroke()}ctx.globalAlpha=1;
+  function compose(blob){
+    return new Promise(function(resolve,reject){var img=new Image(),url=URL.createObjectURL(blob);img.onload=function(){ctx.clearRect(0,0,1024,1024);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';cover(img);URL.revokeObjectURL(url);idle.style.display='none';result.classList.add('ready');resolve()};img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('the forge returned smoke. try again.'))};img.src=url});
   }
-  function finish(text){
-    var vignette=ctx.createRadialGradient(512,470,260,512,512,720);vignette.addColorStop(.55,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.72)');ctx.fillStyle=vignette;ctx.fillRect(0,0,1024,1024);
-    ctx.save();ctx.shadowColor='rgba(0,236,151,.75)';ctx.shadowBlur=46;ctx.beginPath();ctx.arc(512,475,302,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.62)';ctx.fill();ctx.restore();
-    ctx.strokeStyle='#00ec97';ctx.lineWidth=10;ctx.beginPath();ctx.arc(512,475,302,0,Math.PI*2);ctx.stroke();
-    ctx.drawImage(mascot,212,175,600,600);
-    ctx.fillStyle='rgba(7,5,3,.86)';ctx.fillRect(232,820,560,90);ctx.strokeStyle='rgba(0,236,151,.55)';ctx.lineWidth=2;ctx.strokeRect(232,820,560,90);
-    ctx.fillStyle='#00ec97';ctx.textAlign='center';ctx.font='900 44px DisplayX, Impact, sans-serif';ctx.fillText('NEARKAT',512,877);
-    ctx.fillStyle='rgba(243,234,216,.66)';ctx.font='700 17px MonoX, monospace';var tag=text.trim().toUpperCase().slice(0,42);ctx.fillText(tag||'ONE FACE · MANY TUNNELS',512,902);
-    idle.style.display='none';result.classList.add('ready');
-  }
-  function compose(blob,text){
-    return new Promise(function(resolve,reject){var img=new Image(),url=URL.createObjectURL(blob);img.onload=function(){ctx.clearRect(0,0,1024,1024);cover(img);URL.revokeObjectURL(url);finish(text);resolve()};img.onerror=function(){URL.revokeObjectURL(url);reject()};img.src=url});
-  }
-  function readyMascot(){return mascot.complete?Promise.resolve():new Promise(function(resolve,reject){mascot.onload=resolve;mascot.onerror=reject})}
   function setBusy(on){dig.disabled=on;dig.innerHTML=on?'<span class="spin"></span>opening the tunnel…':'forge my pfp'}
   function generate(){
-    var text=prompt.value.trim();if(text.length<3){status.className='note err';status.textContent='give the tunnel a direction.';prompt.focus();return}
-    lastSeed=Math.floor(Math.random()*2147483646)+1;setBusy(true);status.className='note';status.textContent='opening the tunnel…';
-    Promise.all([readyMascot(),fetch('/api/nearkat/pfp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt:text,style:style.value,seed:lastSeed})})])
-      .then(function(values){if(!values[1].ok)throw new Error('quiet');return values[1].blob()})
-      .then(function(blob){return compose(blob,text).then(function(){status.textContent='tunnel found. mascot stayed put.'})})
-      .catch(function(){localBackdrop(text+' '+lastSeed);finish(text);status.textContent='surface went quiet. forged a local tunnel instead.'})
+    var text=prompt.value.trim();if(text.length<3){status.className='note err';status.textContent='give the kat a direction.';prompt.focus();return}
+    setBusy(true);status.className='note';status.textContent='opening the private forge…';
+    fetch('/api/nearkat/pfp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({prompt:text})})
+      .then(function(response){if(response.ok)return response.blob();return response.json().catch(function(){return{}}).then(function(payload){throw new Error(payload.error||'the forge lost the trail. try again.')})})
+      .then(function(blob){return compose(blob).then(function(){status.className='note';status.textContent='tunnel found. same kat, new world.'})})
+      .catch(function(error){status.className='note err';status.textContent=error.message||'the forge lost the trail. try again.'})
       .then(function(){setBusy(false)});
   }
   form.addEventListener('submit',function(e){e.preventDefault();generate()});
