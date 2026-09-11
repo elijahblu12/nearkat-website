@@ -105,16 +105,28 @@ export async function POST(request: Request) {
     };
     const encoded = payload.data?.[0]?.b64_json;
     if (!upstream.ok || !encoded) {
-      const status = upstream.status === 429 ? 429 : upstream.status === 400 ? 400 : 502;
+      const providerCode = payload.error?.code || "";
+      const status =
+        upstream.status === 401 || upstream.status === 403 || upstream.status === 429
+          ? upstream.status
+          : upstream.status === 400
+            ? 400
+            : 502;
+      const error =
+        status === 401
+          ? "the image key was rejected. check it and try again."
+          : status === 403
+            ? "this API project does not have the image forge open yet."
+            : status === 429 &&
+                (providerCode === "insufficient_quota" || providerCode === "credit_balance_exhausted")
+              ? "the image forge needs API credits before it can open."
+              : status === 429
+                ? "too many paws at the forge. try again shortly."
+                : status === 400
+                  ? "the forge could not use that direction or model. check image access and try again."
+                  : "the forge lost the trail. try again.";
       return Response.json(
-        {
-          error:
-            status === 429
-              ? "too many paws at the forge. try again shortly."
-              : status === 400
-                ? "the forge could not use that direction. try different words."
-                : "the forge lost the trail. try again.",
-        },
+        { error, providerCode },
         { status, headers: { "cache-control": "no-store" } },
       );
     }
@@ -128,9 +140,10 @@ export async function POST(request: Request) {
         "x-content-type-options": "nosniff",
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("[nearkat pfp] image request failed:", error instanceof Error ? error.message : "unknown error");
     return Response.json(
-      { error: "the forge lost the trail. try again." },
+      { error: "the forge lost the trail. try again.", providerCode: "network_error" },
       { status: 502, headers: { "cache-control": "no-store" } },
     );
   }
