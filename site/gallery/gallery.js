@@ -1,9 +1,8 @@
 /*
-  THE COLLECTION
-  To add a picture later:
-  1. Put the image in site/gallery/
-  2. Add one line below with its filename, title and note
+  OWNER-ONLY COMMUNITY GALLERY
+  Visitors can view and download these images, but there is no public upload form.
+  To add a picture: place it in public/gallery/ and add one line below.
 */
 window.NEARKAT_GALLERY = [
-  { src: 'img/nearkat-boss.png', title: 'The Boss', note: 'Original portrait' }
+  { src: 'img/nearkat-boss.png', title: 'Mob Boss', note: 'Community pick 001' }
 ];

@@ -109,8 +109,34 @@
   setInterval(load, 30000);
   setInterval(function () { if (lastPayoutIso) $('s-last').textContent = ago(lastPayoutIso); }, 5000);
 
-  /* ---------- file reveal ---------- */
+  /* ---------- depth meter ---------- */
+  var depthEl = $('depth'), locEl = $('loc');
   var chambers = Array.prototype.slice.call(document.querySelectorAll('.chamber'));
+  var surface = document.getElementById('surface');
+  var lastLoc = '';
+  function depth() {
+    var ground = surface.offsetHeight;
+    var y = window.scrollY + window.innerHeight * 0.45;
+    var m = Math.max(0, (y - ground) / 100);
+    depthEl.textContent = (m > 0 ? '−' : '') + m.toFixed(1) + ' m';
+    var loc = 'SURFACE';
+    for (var i = 0; i < chambers.length; i++) {
+      var r = chambers[i].getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.55 && r.bottom > window.innerHeight * 0.3) {
+        loc = chambers[i].querySelector('.m-name').textContent;
+      }
+    }
+    if (m > 0 && loc === 'SURFACE') loc = 'TUNNEL';
+    if (loc !== lastLoc) { locEl.textContent = loc; lastLoc = loc; }
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(function () { depth(); ticking = false; }); ticking = true; }
+  }, { passive: true });
+  window.addEventListener('resize', depth);
+  depth();
+
+  /* ---------- chamber lighting + redaction reveal ---------- */
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -134,7 +160,7 @@
   var copyBtn = $('copy');
   if (copyBtn) copyBtn.addEventListener('click', function () {
     var ca = $('ca').textContent.trim();
-    var done = function () { say('Address copied. Keep it quiet.'); };
+    var done = function () { say('CA copied. Welcome to the mob.'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ca).then(done, function () { fallback(ca); done(); });
     else { fallback(ca); done(); }
   });
@@ -143,7 +169,7 @@
     document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
   }
 
-  /* ---------- collection viewer ---------- */
+  /* ---------- owner-curated community gallery ---------- */
   var galleryGrid = $('gallery-grid');
   var galleryItems = Array.isArray(window.NEARKAT_GALLERY) ? window.NEARKAT_GALLERY : [];
   var viewer = $('art-viewer');
@@ -155,10 +181,9 @@
   function openViewer(item) {
     if (!viewer) return;
     $('viewer-image').src = item.src;
-    $('viewer-image').alt = item.title || 'NEARKAT artwork';
+    $('viewer-image').alt = item.title || 'NEARKAT community artwork';
     $('viewer-title').textContent = item.title || 'Untitled';
     $('viewer-download').href = item.src;
-    $('viewer-download').setAttribute('download', '');
     viewer.hidden = false;
     document.body.style.overflow = 'hidden';
     $('viewer-close').focus();
@@ -169,11 +194,11 @@
       card.type = 'button';
       card.className = 'gallery-card';
       card.setAttribute('aria-label', 'Open ' + (item.title || 'artwork'));
-      card.innerHTML = '<img loading="lazy" alt=""><footer><span></span><small></small></footer>';
+      card.innerHTML = '<img loading="lazy" alt=""><span class="gallery-meta"><strong></strong><small></small></span>';
       card.querySelector('img').src = item.src;
-      card.querySelector('img').alt = item.title || 'NEARKAT artwork';
-      card.querySelector('span').textContent = item.title || 'Untitled';
-      card.querySelector('small').textContent = item.note || ('Piece ' + (index + 1));
+      card.querySelector('img').alt = item.title || 'NEARKAT community artwork';
+      card.querySelector('strong').textContent = item.title || 'Untitled';
+      card.querySelector('small').textContent = item.note || ('Sighting ' + (index + 1));
       card.addEventListener('click', function () { openViewer(item); });
       galleryGrid.appendChild(card);
     });
