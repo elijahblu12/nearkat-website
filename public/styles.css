@@ -421,7 +421,7 @@ h1{
 }
 .gallery-card:hover,.gallery-card:focus-visible{transform:translateY(-3px);border-color:var(--green);box-shadow:0 18px 42px rgba(0,0,0,.3)}
 .gallery-card:focus-visible{outline:2px solid var(--green);outline-offset:3px}
-.gallery-card img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#fff}
+.gallery-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#070706}
 .art-viewer{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:62px 18px 22px;background:rgba(4,3,2,.96)}
 .art-viewer[hidden]{display:none}
 .art-viewer>button{position:absolute;right:22px;top:20px;border:1px solid rgba(243,234,216,.18);border-radius:999px;background:#0b0806;color:var(--bone);padding:9px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
