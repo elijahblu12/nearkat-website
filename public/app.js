@@ -182,23 +182,19 @@
     if (!viewer) return;
     $('viewer-image').src = item.src;
     $('viewer-image').alt = item.title || 'NEARKAT community artwork';
-    $('viewer-title').textContent = item.title || 'Untitled';
-    $('viewer-download').href = item.src;
     viewer.hidden = false;
     document.body.style.overflow = 'hidden';
     $('viewer-close').focus();
   }
   if (galleryGrid) {
-    galleryItems.forEach(function (item, index) {
+    galleryItems.forEach(function (item) {
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'gallery-card';
       card.setAttribute('aria-label', 'Open ' + (item.title || 'artwork'));
-      card.innerHTML = '<img loading="lazy" alt=""><span class="gallery-meta"><strong></strong><small></small></span>';
+      card.innerHTML = '<img loading="lazy" alt="">';
       card.querySelector('img').src = item.src;
       card.querySelector('img').alt = item.title || 'NEARKAT community artwork';
-      card.querySelector('strong').textContent = item.title || 'Untitled';
-      card.querySelector('small').textContent = item.note || ('Sighting ' + (index + 1));
       card.addEventListener('click', function () { openViewer(item); });
       galleryGrid.appendChild(card);
     });

@@ -4,5 +4,4 @@
   To add a picture: place it in public/gallery/ and add one line below.
 */
 window.NEARKAT_GALLERY = [
-  { src: 'img/nearkat-boss.png', title: 'Mob Boss', note: 'Community pick 001' }
 ];
