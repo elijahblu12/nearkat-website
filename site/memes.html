@@ -54,6 +54,8 @@ nav { background:var(--black); border-bottom:1px solid var(--border); height:56p
 .dl-btn { display:flex; align-items:center; gap:6px; background:var(--green); color:#000; border:none; padding:8px 14px; border-radius:7px; font-size:12px; font-weight:900; cursor:pointer; transition:background 0.15s,transform 0.1s; letter-spacing:0.3px; text-transform:uppercase; flex-shrink:0; }
 .dl-btn:hover { background:var(--green-d); }
 .dl-btn:active { transform:scale(0.97); }
+.dl-btn:disabled,.btn-primary:disabled { opacity:0.55; cursor:wait; }
+.save-note { grid-column:1/-1; color:var(--muted); font-size:12px; line-height:1.5; margin-top:2px; }
 .empty-state { grid-column:1/-1; text-align:center; padding:80px 24px; }
 .empty-icon { font-size:56px; margin-bottom:16px; }
 .empty-h { font-size:22px; font-weight:900; margin-bottom:8px; }
@@ -104,6 +106,9 @@ nav { background:var(--black); border-bottom:1px solid var(--border); height:56p
 .log-item { font-size:12px; padding:6px 10px; border-radius:6px; background:var(--surface2); color:var(--muted); }
 .log-item.ok { color:var(--green); }
 .log-item.err { color:#ff6b6b; }
+.loading-state { grid-column:1/-1; text-align:center; color:var(--muted); padding:70px 24px; font-size:14px; }
+.toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); background:#fff; color:#0a0b0c; border-radius:999px; padding:10px 16px; font-size:13px; font-weight:800; z-index:500; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; box-shadow:0 12px 40px rgba(0,0,0,.45); }
+.toast.show { opacity:1; transform:translate(-50%,0); }
 .admin-meme-list { display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; }
 .admin-meme-row { display:flex; align-items:center; gap:10px; background:var(--surface2); border-radius:8px; padding:8px 10px; }
 .admin-meme-row img { width:40px; height:40px; object-fit:cover; border-radius:6px; background:var(--black); flex-shrink:0; }
@@ -113,7 +118,7 @@ nav { background:var(--black); border-bottom:1px solid var(--border); height:56p
 .del-btn:hover { color:#ff4444; }
 footer { background:var(--black); border-top:1px solid var(--border); padding:24px 40px; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--muted); }
 footer a { color:var(--green); text-decoration:none; font-weight:700; }
-@media(max-width:600px){nav,.hero,.toolbar,.gallery,footer{padding-left:20px;padding-right:20px;}.meme-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}.nav-right .nav-link{display:none;}}
+@media(max-width:600px){nav,.hero,.toolbar,.gallery,footer{padding-left:20px;padding-right:20px;}.meme-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.nav-right .nav-link{display:none;}.card-footer{padding:10px;flex-direction:column;align-items:stretch}.card-name{text-align:center}.dl-btn{justify-content:center;min-height:42px}.lb-footer{align-items:stretch;gap:10px;flex-direction:column}.lb-footer .dl-btn{width:100%}.hero{padding-top:46px;padding-bottom:42px}.hero-sub{margin-bottom:24px}}
 </style>
 </head>
 <body>
@@ -130,12 +135,12 @@ footer a { color:var(--green); text-decoration:none; font-weight:700; }
 </nav>
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow"><span class="dot"></span>Kalahari meme drop · free to download</div>
+    <div class="hero-eyebrow"><span class="dot"></span>Kalahari meme drop · free to save</div>
     <h1>The Mob's<br><span>Meme Stash.</span></h1>
-    <p class="hero-sub">Every meme the mob made, collected in one tunnel. Download freely. Spread the lookout.</p>
+    <p class="hero-sub">Every meme the mob made, collected in one tunnel. Tap save, choose your phone, and spread the lookout.</p>
     <div class="hero-stats">
       <div class="stat-pill"><div class="stat-val" id="stat-count">0</div><div class="stat-lbl">Memes dropped</div></div>
-      <div class="stat-pill"><div class="stat-val" id="stat-dl">0</div><div class="stat-lbl">Times downloaded</div></div>
+      <div class="stat-pill"><div class="stat-val" id="stat-dl">Ready</div><div class="stat-lbl">Phone friendly</div></div>
     </div>
   </div>
 </section>
@@ -161,7 +166,7 @@ footer a { color:var(--green); text-decoration:none; font-weight:700; }
     <img class="lb-img" id="lb-img" src="" alt="">
     <div class="lb-footer">
       <span class="lb-name" id="lb-name"></span>
-      <button class="dl-btn" id="lb-dl">↓ Download</button>
+      <button class="dl-btn" id="lb-dl">↓ Save to phone</button>
     </div>
   </div>
 </div>
@@ -212,47 +217,110 @@ footer a { color:var(--green); text-decoration:none; font-weight:700; }
     </div>
   </div>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const ADMIN_PW='nearkat'; // ← change this!
-const STORE_KEY='nearkat_meme_stash';
-const DL_KEY='nearkat_dl_count';
-let memes=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
-let dlCount=parseInt(localStorage.getItem(DL_KEY)||'0');
+let memes=[];
 let activeTag='all';
-let pendingFile=null;
-function persist(){localStorage.setItem(STORE_KEY,JSON.stringify(memes));localStorage.setItem(DL_KEY,String(dlCount));updateStats();}
-function updateStats(){document.getElementById('stat-count').textContent=memes.length;document.getElementById('stat-dl').textContent=dlCount;}
+let pendingFiles=[];
+let adminPassword='';
+let adminUnlocked=false;
+let toastTimer;
+
+const tagEmoji={degen:'🤏',mob:'🦡',price:'📈',vibes:'✨'};
+
+function showToast(message){const toast=document.getElementById('toast');toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2600);}
+function updateStats(){document.getElementById('stat-count').textContent=memes.length;}
+
+async function loadGallery(){
+  const grid=document.getElementById('meme-grid');
+  grid.innerHTML='<div class="loading-state">Opening the stash…</div>';
+  try{
+    const response=await fetch('/api/memes',{cache:'no-store'});
+    if(!response.ok)throw new Error('load failed');
+    const data=await response.json();
+    memes=Array.isArray(data.memes)?data.memes:[];
+    updateStats();renderGallery();
+    if(adminUnlocked)renderAdminList();
+  }catch{
+    grid.innerHTML='<div class="empty-state"><div class="empty-icon">🦡</div><div class="empty-h">The stash is locked up</div><p class="empty-p">Try the tunnel again in a moment.</p></div>';
+  }
+}
+
 function renderGallery(){
   const q=document.getElementById('search').value.toLowerCase();
   let list=[...memes];
   if(activeTag!=='all')list=list.filter(m=>m.tag===activeTag);
   if(q)list=list.filter(m=>m.name.toLowerCase().includes(q));
-  list.reverse();
   const grid=document.getElementById('meme-grid');
-  const tagE={degen:'🤏',mob:'🦡',price:'📈',vibes:'✨'};
   if(!list.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">${q||activeTag!=='all'?'🔍':'🦡'}</div><div class="empty-h">${q||activeTag!=='all'?'No memes found':'No memes yet'}</div><p class="empty-p">${q||activeTag!=='all'?'Try different keywords or tags':'The mob is still cooking...'}</p></div>`;return;}
-  grid.innerHTML=list.map(m=>`<div class="meme-card"><img class="card-img" src="${m.dataUrl}" alt="${m.name}" onclick="openLb(${m.id})" loading="lazy"><div class="card-footer"><span class="card-name">${tagE[m.tag]||''} ${m.name}</span><button class="dl-btn" onclick="dlMeme(${m.id})">↓ Save</button></div></div>`).join('');
+  grid.replaceChildren();
+  list.forEach(m=>{
+    const card=document.createElement('article');card.className='meme-card';
+    const img=document.createElement('img');img.className='card-img';img.src=m.imageUrl;img.alt=m.name;img.loading='lazy';img.addEventListener('click',()=>openLb(m.id));
+    const footer=document.createElement('div');footer.className='card-footer';
+    const name=document.createElement('span');name.className='card-name';name.textContent=`${tagEmoji[m.tag]||''} ${m.name}`;
+    const save=document.createElement('button');save.className='dl-btn';save.type='button';save.textContent='↓ Save';save.addEventListener('click',()=>saveMeme(m.id,save));
+    footer.append(name,save);card.append(img,footer);grid.append(card);
+  });
+  const note=document.createElement('p');note.className='save-note';note.textContent='On iPhone, Save opens the share sheet — choose “Save Image.” You can also press and hold any full-size image.';grid.append(note);
 }
 function setTag(tag,btn){activeTag=tag;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGallery();}
-function dlMeme(id){const m=memes.find(x=>x.id===id);if(!m)return;const a=document.createElement('a');a.href=m.dataUrl;a.download=m.name.replace(/[^a-z0-9\s]/gi,'').trim().replace(/\s+/g,'_')+'.png';a.click();dlCount++;persist();}
-function openLb(id){const m=memes.find(x=>x.id===id);if(!m)return;document.getElementById('lb-img').src=m.dataUrl;document.getElementById('lb-name').textContent=m.name;document.getElementById('lb-dl').onclick=()=>dlMeme(id);document.getElementById('lb').classList.add('open');document.body.style.overflow='hidden';}
+async function saveMeme(id,button){
+  const m=memes.find(x=>x.id===id);if(!m)return;
+  const oldText=button.textContent;button.disabled=true;button.textContent='Getting file…';
+  try{
+    const response=await fetch(m.downloadUrl);
+    if(!response.ok)throw new Error('download failed');
+    const blob=await response.blob();
+    const file=new File([blob],m.filename||'nearkat-meme.png',{type:blob.type||'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:m.name});
+    }else{
+      const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);
+      showToast('Image saved.');
+    }
+  }catch(error){if(error&&error.name==='AbortError')return;window.open(m.downloadUrl,'_blank','noopener');showToast('Full image opened — press and hold to save.');}
+  finally{button.disabled=false;button.textContent=oldText;}
+}
+function openLb(id){const m=memes.find(x=>x.id===id);if(!m)return;document.getElementById('lb-img').src=m.imageUrl;document.getElementById('lb-img').alt=m.name;document.getElementById('lb-name').textContent=m.name;document.getElementById('lb-dl').onclick=()=>saveMeme(id,document.getElementById('lb-dl'));document.getElementById('lb').classList.add('open');document.body.style.overflow='hidden';}
 function closeLb(e){if(e&&e.target!==document.getElementById('lb'))return;document.getElementById('lb').classList.remove('open');document.body.style.overflow='';}
-let adminUnlocked=false;
 function openAdmin(){document.getElementById('admin-backdrop').classList.add('open');document.body.style.overflow='hidden';if(adminUnlocked)showUploadScreen();}
 function closeAdmin(){document.getElementById('admin-backdrop').classList.remove('open');document.body.style.overflow='';}
-function checkPw(){const val=document.getElementById('pw-input').value;if(val===ADMIN_PW){adminUnlocked=true;document.getElementById('pw-input').value='';showUploadScreen();}else{document.getElementById('pw-err').classList.add('show');document.getElementById('pw-input').value='';setTimeout(()=>document.getElementById('pw-err').classList.remove('show'),2500);}}
+async function checkPw(){
+  const input=document.getElementById('pw-input');const button=document.querySelector('#pw-screen .btn-primary');const val=input.value;
+  button.disabled=true;button.textContent='Checking…';
+  try{const response=await fetch('/api/memes/auth',{method:'POST',headers:{'x-admin-password':val}});if(!response.ok)throw new Error('unauthorized');adminPassword=val;adminUnlocked=true;input.value='';showUploadScreen();}
+  catch{document.getElementById('pw-err').classList.add('show');input.value='';setTimeout(()=>document.getElementById('pw-err').classList.remove('show'),2500);}
+  finally{button.disabled=false;button.textContent='Enter the Den';}
+}
 function showUploadScreen(){document.getElementById('pw-screen').style.display='none';document.getElementById('upload-screen').classList.add('visible');renderAdminList();}
-function renderAdminList(){const list=document.getElementById('admin-meme-list');if(!memes.length){list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0;">No memes published yet.</div>';return;}list.innerHTML=[...memes].reverse().map(m=>`<div class="admin-meme-row"><img src="${m.dataUrl}" alt="${m.name}"><span class="admin-meme-name">${m.name}</span><span class="admin-meme-tag">${m.tag}</span><button class="del-btn" onclick="deleteMeme(${m.id})">×</button></div>`).join('');}
-function deleteMeme(id){if(!confirm('Remove this meme from the stash?'))return;memes=memes.filter(m=>m.id!==id);persist();renderGallery();renderAdminList();}
+function renderAdminList(){
+  const list=document.getElementById('admin-meme-list');list.replaceChildren();
+  if(!memes.length){const empty=document.createElement('div');empty.style.cssText='font-size:13px;color:var(--muted);padding:8px 0';empty.textContent='No memes published yet.';list.append(empty);return;}
+  memes.forEach(m=>{const row=document.createElement('div');row.className='admin-meme-row';const img=document.createElement('img');img.src=m.imageUrl;img.alt='';const name=document.createElement('span');name.className='admin-meme-name';name.textContent=m.name;const tag=document.createElement('span');tag.className='admin-meme-tag';tag.textContent=m.tag;const del=document.createElement('button');del.className='del-btn';del.type='button';del.textContent='×';del.setAttribute('aria-label',`Remove ${m.name}`);del.addEventListener('click',()=>deleteMeme(m.id,del));row.append(img,name,tag,del);list.append(row);});
+}
+async function deleteMeme(id,button){if(!confirm('Remove this meme from the stash?'))return;button.disabled=true;try{const response=await fetch(`/api/memes/${encodeURIComponent(id)}`,{method:'DELETE',headers:{'x-admin-password':adminPassword}});if(!response.ok)throw new Error('delete failed');await loadGallery();showToast('Meme removed.');}catch{button.disabled=false;addLog('Could not remove that meme.','err');}}
 const dropZone=document.getElementById('drop-zone');
 dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');handleFiles(e.dataTransfer.files);});
-function handleFiles(files){const file=files[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=e=>{pendingFile=e.target.result;document.getElementById('preview-img').src=pendingFile;document.getElementById('preview-thumb').classList.add('visible');const n=document.getElementById('meme-name');if(!n.value)n.value=file.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ');};reader.readAsDataURL(file);document.getElementById('file-input').value='';}
-function publishMeme(){if(!pendingFile){addLog('No image selected.','err');return;}const name=document.getElementById('meme-name').value.trim()||'Untitled';const tag=document.getElementById('meme-tag').value;memes.push({id:Date.now(),name,tag,dataUrl:pendingFile,createdAt:Date.now()});persist();renderGallery();renderAdminList();addLog(`✓ "${name}" published to the stash!`,'ok');pendingFile=null;document.getElementById('preview-thumb').classList.remove('visible');document.getElementById('preview-img').src='';document.getElementById('meme-name').value='';}
+function handleFiles(files){pendingFiles=Array.from(files).filter(file=>file.type.startsWith('image/'));if(!pendingFiles.length){addLog('Choose a JPG, PNG, GIF, or WebP.','err');return;}const file=pendingFiles[0];const reader=new FileReader();reader.onload=e=>{document.getElementById('preview-img').src=e.target.result;document.getElementById('preview-thumb').classList.add('visible');const n=document.getElementById('meme-name');if(!n.value&&pendingFiles.length===1)n.value=file.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ');};reader.readAsDataURL(file);document.getElementById('file-input').value='';addLog(`${pendingFiles.length} image${pendingFiles.length===1?'':'s'} ready.`,'ok');}
+async function publishMeme(){
+  if(!pendingFiles.length){addLog('No image selected.','err');return;}
+  const button=document.querySelector('#upload-screen .btn-primary');const customName=document.getElementById('meme-name').value.trim();const tag=document.getElementById('meme-tag').value;button.disabled=true;
+  let published=0;
+  try{
+    for(let i=0;i<pendingFiles.length;i++){
+      const file=pendingFiles[i];button.textContent=`Publishing ${i+1}/${pendingFiles.length}…`;const form=new FormData();form.append('file',file);form.append('tag',tag);if(customName&&pendingFiles.length===1)form.append('name',customName);
+      const response=await fetch('/api/memes',{method:'POST',headers:{'x-admin-password':adminPassword},body:form});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Could not publish ${file.name}.`);published++;
+    }
+    addLog(`✓ ${published} meme${published===1?'':'s'} published for everyone.`,'ok');pendingFiles=[];document.getElementById('preview-thumb').classList.remove('visible');document.getElementById('preview-img').src='';document.getElementById('meme-name').value='';await loadGallery();
+  }catch(error){addLog(error.message||'Upload failed. Try again.','err');}
+  finally{button.disabled=false;button.textContent='Publish to Stash';}
+}
 function addLog(msg,type){const log=document.getElementById('upload-log');const el=document.createElement('div');el.className='log-item '+(type||'');el.textContent=msg;log.prepend(el);if(log.children.length>5)log.lastChild.remove();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLb();closeAdmin();}});
-updateStats();renderGallery();
+loadGallery();
 </script>
 </body>
 </html>
