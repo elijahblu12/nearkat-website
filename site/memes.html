@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEARKAT — Meme Stash</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:#0a0b0c; --dark:#111214; --surface:#18191c; --surface2:#202226;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+  --green:#00e676; --green-d:#00c060; --green-bg:rgba(0,230,118,0.10);
+  --text:#ffffff; --muted:rgba(255,255,255,0.45); --radius:10px;
+}
+body { background:var(--dark); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Arial,sans-serif; min-height:100vh; }
+nav { background:var(--black); border-bottom:1px solid var(--border); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-icon { width:34px; height:34px; background:var(--green); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.logo-wordmark { font-size:15px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:var(--text); }
+.nav-badge { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border2); border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--muted); }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.nav-link { font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+.nav-link:hover { color:var(--text); }
+.admin-btn { background:transparent; border:1px solid var(--border2); color:var(--muted); padding:7px 14px; border-radius:8px; font-size:12px; font-weight:700; letter-spacing:0.5px; cursor:pointer; transition:all 0.15s; text-transform:uppercase; }
+.admin-btn:hover { border-color:var(--green); color:var(--green); }
+.hero { background:var(--black); border-bottom:1px solid var(--border); padding:64px 40px 56px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-80px; right:-80px; width:400px; height:400px; background:radial-gradient(circle,rgba(0,230,118,0.08) 0%,transparent 70%); pointer-events:none; }
+.hero-inner { max-width:1100px; margin:0 auto; }
+.hero-eyebrow { display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--border2); border-radius:20px; padding:5px 12px 5px 8px; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:24px; }
+.hero h1 { font-size:clamp(40px,7vw,80px); font-weight:900; line-height:0.95; letter-spacing:-2px; margin-bottom:16px; }
+.hero h1 span { color:var(--green); }
+.hero-sub { font-size:16px; color:var(--muted); max-width:420px; line-height:1.6; margin-bottom:32px; }
+.hero-stats { display:flex; gap:24px; flex-wrap:wrap; }
+.stat-pill { background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:12px 18px; min-width:120px; }
+.stat-val { font-size:22px; font-weight:900; color:var(--green); letter-spacing:-0.5px; }
+.stat-lbl { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; margin-top:2px; }
+.toolbar { max-width:1100px; margin:0 auto; padding:28px 40px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.search-wrap { flex:1; min-width:200px; position:relative; }
+.search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+.search-input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:11px 14px 11px 38px; border-radius:var(--radius); font-size:14px; outline:none; transition:border-color 0.15s; }
+.search-input:focus { border-color:var(--green); }
+.search-input::placeholder { color:var(--muted); }
+.filter-btn { background:var(--surface); border:1px solid var(--border); color:var(--muted); padding:11px 16px; border-radius:var(--radius); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.filter-btn:hover,.filter-btn.active { background:var(--green-bg); border-color:var(--green); color:var(--green); }
+.gallery { max-width:1100px; margin:0 auto; padding:24px 40px 80px; }
+.meme-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+.meme-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; }
+.meme-card:hover { transform:translateY(-3px); border-color:var(--border2); box-shadow:0 12px 40px rgba(0,0,0,0.5); }
+.card-img { width:100%; aspect-ratio:1; object-fit:contain; display:block; background:var(--black); cursor:pointer; transition:opacity 0.2s; }
+.card-img:hover { opacity:0.9; }
+.card-footer { padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border); }
+.card-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+.dl-btn { display:flex; align-items:center; gap:6px; background:var(--green); color:#000; border:none; padding:8px 14px; border-radius:7px; font-size:12px; font-weight:900; cursor:pointer; transition:background 0.15s,transform 0.1s; letter-spacing:0.3px; text-transform:uppercase; flex-shrink:0; }
+.dl-btn:hover { background:var(--green-d); }
+.dl-btn:active { transform:scale(0.97); }
+.empty-state { grid-column:1/-1; text-align:center; padding:80px 24px; }
+.empty-icon { font-size:56px; margin-bottom:16px; }
+.empty-h { font-size:22px; font-weight:900; margin-bottom:8px; }
+.empty-p { font-size:14px; color:var(--muted); }
+.lb-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:300; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; padding:24px; }
+.lb-backdrop.open { opacity:1; pointer-events:all; }
+.lb-box { background:var(--surface); border:1px solid var(--border2); border-radius:16px; overflow:hidden; max-width:700px; width:100%; position:relative; }
+.lb-img { width:100%; max-height:65vh; object-fit:contain; display:block; background:var(--black); }
+.lb-footer { padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+.lb-name { font-size:15px; font-weight:800; }
+.lb-close { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); border:none; color:#fff; width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.admin-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; padding:24px; }
+.admin-backdrop.open { opacity:1; pointer-events:all; }
+.admin-modal { background:var(--surface); border:1px solid var(--border2); border-radius:18px; width:100%; max-width:520px; overflow:hidden; transform:scale(0.96) translateY(10px); transition:transform 0.25s; }
+.admin-backdrop.open .admin-modal { transform:scale(1) translateY(0); }
+.admin-modal-header { padding:22px 24px 0; display:flex; justify-content:space-between; align-items:flex-start; }
+.admin-modal-header h2 { font-size:20px; font-weight:900; }
+.admin-modal-header h2 span { color:var(--green); }
+.close-x { background:var(--surface2); border:none; color:var(--text); width:30px; height:30px; border-radius:50%; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.admin-modal-body { padding:20px 24px 24px; }
+.pw-screen { display:flex; flex-direction:column; gap:12px; }
+.pw-label { font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--muted); }
+.pw-input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:9px; font-size:15px; outline:none; transition:border-color 0.15s; }
+.pw-input:focus { border-color:var(--green); }
+.pw-err { font-size:13px; color:#ff4444; display:none; }
+.pw-err.show { display:block; }
+.upload-screen { display:none; flex-direction:column; gap:16px; }
+.upload-screen.visible { display:flex; }
+.drop-zone { border:2px dashed var(--border2); border-radius:12px; padding:48px 24px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--surface2); position:relative; }
+.drop-zone:hover,.drop-zone.drag-over { border-color:var(--green); background:var(--green-bg); }
+.drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.drop-icon { font-size:36px; margin-bottom:10px; }
+.drop-title { font-size:16px; font-weight:800; margin-bottom:4px; }
+.drop-sub { font-size:13px; color:var(--muted); }
+.field-row { display:flex; flex-direction:column; gap:6px; }
+.field-label { font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--muted); }
+.field-input { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:9px; font-size:14px; font-family:inherit; outline:none; transition:border-color 0.15s; }
+.field-input:focus { border-color:var(--green); }
+.field-input::placeholder { color:var(--muted); }
+.preview-thumb { width:100%; border-radius:9px; overflow:hidden; background:var(--black); display:none; aspect-ratio:16/9; }
+.preview-thumb.visible { display:block; }
+.preview-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+.action-row { display:flex; gap:10px; }
+.btn-primary { flex:1; background:var(--green); color:#000; border:none; padding:13px; border-radius:9px; font-size:14px; font-weight:900; cursor:pointer; letter-spacing:0.3px; text-transform:uppercase; transition:background 0.15s; }
+.btn-primary:hover { background:var(--green-d); }
+.btn-secondary { background:var(--surface2); color:var(--muted); border:1px solid var(--border); padding:13px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; }
+.upload-log { max-height:100px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+.log-item { font-size:12px; padding:6px 10px; border-radius:6px; background:var(--surface2); color:var(--muted); }
+.log-item.ok { color:var(--green); }
+.log-item.err { color:#ff6b6b; }
+.admin-meme-list { display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; }
+.admin-meme-row { display:flex; align-items:center; gap:10px; background:var(--surface2); border-radius:8px; padding:8px 10px; }
+.admin-meme-row img { width:40px; height:40px; object-fit:cover; border-radius:6px; background:var(--black); flex-shrink:0; }
+.admin-meme-name { flex:1; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-meme-tag { font-size:10px; color:var(--muted); background:var(--surface); padding:2px 7px; border-radius:4px; }
+.del-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:2px 4px; transition:color 0.15s; }
+.del-btn:hover { color:#ff4444; }
+footer { background:var(--black); border-top:1px solid var(--border); padding:24px 40px; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--muted); }
+footer a { color:var(--green); text-decoration:none; font-weight:700; }
+@media(max-width:600px){nav,.hero,.toolbar,.gallery,footer{padding-left:20px;padding-right:20px;}.meme-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}.nav-right .nav-link{display:none;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">🦡</div>
+    <span class="logo-wordmark">Nearkat</span>
+  </div>
+  <div class="nav-badge"><span class="dot"></span>Meme stash · active</div>
+  <div class="nav-right">
+    <a class="nav-link" href="https://nearkat.xyz">Main site</a>
+    <button class="admin-btn" onclick="openAdmin()">Den access</button>
+  </div>
+</nav>
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="dot"></span>Kalahari meme drop · free to download</div>
+    <h1>The Mob's<br><span>Meme Stash.</span></h1>
+    <p class="hero-sub">Every meme the mob made, collected in one tunnel. Download freely. Spread the lookout.</p>
+    <div class="hero-stats">
+      <div class="stat-pill"><div class="stat-val" id="stat-count">0</div><div class="stat-lbl">Memes dropped</div></div>
+      <div class="stat-pill"><div class="stat-val" id="stat-dl">0</div><div class="stat-lbl">Times downloaded</div></div>
+    </div>
+  </div>
+</section>
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-input" type="text" id="search" placeholder="Search the stash..." oninput="renderGallery()">
+  </div>
+  <button class="filter-btn active" onclick="setTag('all',this)">All</button>
+  <button class="filter-btn" onclick="setTag('degen',this)">🤏 Degen</button>
+  <button class="filter-btn" onclick="setTag('mob',this)">🦡 Mob</button>
+  <button class="filter-btn" onclick="setTag('price',this)">📈 Price</button>
+  <button class="filter-btn" onclick="setTag('vibes',this)">✨ Vibes</button>
+</div>
+<div class="gallery"><div class="meme-grid" id="meme-grid"></div></div>
+<footer>
+  <span>🦡 NearKat Meme Stash — <a href="https://nearkat.xyz">nearkat.xyz</a></span>
+  <span>$NEARKAT pays the mob</span>
+</footer>
+<div class="lb-backdrop" id="lb" onclick="closeLb(event)">
+  <div class="lb-box">
+    <button class="lb-close" onclick="closeLb()">×</button>
+    <img class="lb-img" id="lb-img" src="" alt="">
+    <div class="lb-footer">
+      <span class="lb-name" id="lb-name"></span>
+      <button class="dl-btn" id="lb-dl">↓ Download</button>
+    </div>
+  </div>
+</div>
+<div class="admin-backdrop" id="admin-backdrop">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h2>Den <span>Access</span></h2>
+      <button class="close-x" onclick="closeAdmin()">×</button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="pw-screen" id="pw-screen">
+        <div class="pw-label">Enter the den password</div>
+        <input class="pw-input" type="password" id="pw-input" placeholder="Password..." onkeydown="if(event.key==='Enter')checkPw()">
+        <div class="pw-err" id="pw-err">Wrong password. The mob doesn't know you.</div>
+        <button class="btn-primary" onclick="checkPw()">Enter the Den</button>
+      </div>
+      <div class="upload-screen" id="upload-screen">
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
+          <div class="drop-icon">📤</div>
+          <div class="drop-title">Drop memes here</div>
+          <div class="drop-sub">JPG, PNG, GIF, WebP — multi-upload OK</div>
+        </div>
+        <div class="preview-thumb" id="preview-thumb"><img id="preview-img" src="" alt=""></div>
+        <div class="field-row">
+          <div class="field-label">Meme name</div>
+          <input class="field-input" type="text" id="meme-name" placeholder="e.g. Kat on the mound...">
+        </div>
+        <div class="field-row">
+          <div class="field-label">Tag</div>
+          <select class="field-input" id="meme-tag">
+            <option value="degen">🤏 Degen</option>
+            <option value="mob">🦡 Mob</option>
+            <option value="price">📈 Price</option>
+            <option value="vibes">✨ Vibes</option>
+          </select>
+        </div>
+        <div class="upload-log" id="upload-log"></div>
+        <div class="action-row">
+          <button class="btn-primary" onclick="publishMeme()">Publish to Stash</button>
+          <button class="btn-secondary" onclick="closeAdmin()">Close</button>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:14px;">
+          <div class="field-label" style="margin-bottom:10px;">Published memes</div>
+          <div class="admin-meme-list" id="admin-meme-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const ADMIN_PW='nearkat'; // ← change this!
+const STORE_KEY='nearkat_meme_stash';
+const DL_KEY='nearkat_dl_count';
+let memes=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+let dlCount=parseInt(localStorage.getItem(DL_KEY)||'0');
+let activeTag='all';
+let pendingFile=null;
+function persist(){localStorage.setItem(STORE_KEY,JSON.stringify(memes));localStorage.setItem(DL_KEY,String(dlCount));updateStats();}
+function updateStats(){document.getElementById('stat-count').textContent=memes.length;document.getElementById('stat-dl').textContent=dlCount;}
+function renderGallery(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let list=[...memes];
+  if(activeTag!=='all')list=list.filter(m=>m.tag===activeTag);
+  if(q)list=list.filter(m=>m.name.toLowerCase().includes(q));
+  list.reverse();
+  const grid=document.getElementById('meme-grid');
+  const tagE={degen:'🤏',mob:'🦡',price:'📈',vibes:'✨'};
+  if(!list.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">${q||activeTag!=='all'?'🔍':'🦡'}</div><div class="empty-h">${q||activeTag!=='all'?'No memes found':'No memes yet'}</div><p class="empty-p">${q||activeTag!=='all'?'Try different keywords or tags':'The mob is still cooking...'}</p></div>`;return;}
+  grid.innerHTML=list.map(m=>`<div class="meme-card"><img class="card-img" src="${m.dataUrl}" alt="${m.name}" onclick="openLb(${m.id})" loading="lazy"><div class="card-footer"><span class="card-name">${tagE[m.tag]||''} ${m.name}</span><button class="dl-btn" onclick="dlMeme(${m.id})">↓ Save</button></div></div>`).join('');
+}
+function setTag(tag,btn){activeTag=tag;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGallery();}
+function dlMeme(id){const m=memes.find(x=>x.id===id);if(!m)return;const a=document.createElement('a');a.href=m.dataUrl;a.download=m.name.replace(/[^a-z0-9\s]/gi,'').trim().replace(/\s+/g,'_')+'.png';a.click();dlCount++;persist();}
+function openLb(id){const m=memes.find(x=>x.id===id);if(!m)return;document.getElementById('lb-img').src=m.dataUrl;document.getElementById('lb-name').textContent=m.name;document.getElementById('lb-dl').onclick=()=>dlMeme(id);document.getElementById('lb').classList.add('open');document.body.style.overflow='hidden';}
+function closeLb(e){if(e&&e.target!==document.getElementById('lb'))return;document.getElementById('lb').classList.remove('open');document.body.style.overflow='';}
+let adminUnlocked=false;
+function openAdmin(){document.getElementById('admin-backdrop').classList.add('open');document.body.style.overflow='hidden';if(adminUnlocked)showUploadScreen();}
+function closeAdmin(){document.getElementById('admin-backdrop').classList.remove('open');document.body.style.overflow='';}
+function checkPw(){const val=document.getElementById('pw-input').value;if(val===ADMIN_PW){adminUnlocked=true;document.getElementById('pw-input').value='';showUploadScreen();}else{document.getElementById('pw-err').classList.add('show');document.getElementById('pw-input').value='';setTimeout(()=>document.getElementById('pw-err').classList.remove('show'),2500);}}
+function showUploadScreen(){document.getElementById('pw-screen').style.display='none';document.getElementById('upload-screen').classList.add('visible');renderAdminList();}
+function renderAdminList(){const list=document.getElementById('admin-meme-list');if(!memes.length){list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0;">No memes published yet.</div>';return;}list.innerHTML=[...memes].reverse().map(m=>`<div class="admin-meme-row"><img src="${m.dataUrl}" alt="${m.name}"><span class="admin-meme-name">${m.name}</span><span class="admin-meme-tag">${m.tag}</span><button class="del-btn" onclick="deleteMeme(${m.id})">×</button></div>`).join('');}
+function deleteMeme(id){if(!confirm('Remove this meme from the stash?'))return;memes=memes.filter(m=>m.id!==id);persist();renderGallery();renderAdminList();}
+const dropZone=document.getElementById('drop-zone');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');handleFiles(e.dataTransfer.files);});
+function handleFiles(files){const file=files[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=e=>{pendingFile=e.target.result;document.getElementById('preview-img').src=pendingFile;document.getElementById('preview-thumb').classList.add('visible');const n=document.getElementById('meme-name');if(!n.value)n.value=file.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ');};reader.readAsDataURL(file);document.getElementById('file-input').value='';}
+function publishMeme(){if(!pendingFile){addLog('No image selected.','err');return;}const name=document.getElementById('meme-name').value.trim()||'Untitled';const tag=document.getElementById('meme-tag').value;memes.push({id:Date.now(),name,tag,dataUrl:pendingFile,createdAt:Date.now()});persist();renderGallery();renderAdminList();addLog(`✓ "${name}" published to the stash!`,'ok');pendingFile=null;document.getElementById('preview-thumb').classList.remove('visible');document.getElementById('preview-img').src='';document.getElementById('meme-name').value='';}
+function addLog(msg,type){const log=document.getElementById('upload-log');const el=document.createElement('div');el.className='log-item '+(type||'');el.textContent=msg;log.prepend(el);if(log.children.length>5)log.lastChild.remove();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLb();closeAdmin();}});
+updateStats();renderGallery();
+</script>
+</body>
+</html>
